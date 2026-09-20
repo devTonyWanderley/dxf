@@ -1,6 +1,6 @@
-//  C:\Tony\DXF2\main.cpp
+//  C:\Tony\DXF\main.cpp
 #include <iostream>
-#include "Dxf2.hpp"
+#include "Dxf.hpp"
 
 //--Lidar com dicionário de char[]--
 std::vector<char> linguicao = {'C', 'A', 'S', 'A', 'B', 'E', 'C', 'O', 'A', 'N', 'T', 'A', 'Z', 'E', 'N', 'O', 'B', 'I', 'O', 'M', 'O', 'U', 'S',
@@ -36,17 +36,24 @@ std::vector<DXF::Fresta> iLinguaPraIFrestas(std::vector<size_t> &li)
 
 int main()
 {
-    //DXF::Dxf teste;
-    //teste.Valida();
-    std::cout << linguicao.size() << std::endl;
-    std::vector<size_t>::iterator iti{}, itf{};
-    for(itf = iLingua.begin(); itf != iLingua.end(); itf++)
-    {
-        if(itf != iLingua.begin()) imprime(linguicao, *iti, *itf);
-        iti = itf;
-    }
+    DXF::Dxf teste;
+    teste.Valida();
+    //std::cout << linguicao.size() << std::endl;
+    //std::vector<size_t>::iterator iti{}, itf{};
+    //for(itf = iLingua.begin(); itf != iLingua.end(); itf++)
+    //{
+    //    if(itf != iLingua.begin()) imprime(linguicao, *iti, *itf);
+    //    iti = itf;
+    //}
     std::vector<DXF::Fresta> fILingua = iLinguaPraIFrestas(iLingua);
     for(auto f : fILingua)std::cout << f.posi << ' ' << f.posf << std::endl;
+
+    DXF::viewChar a;
+    a.setFonte(linguicao);
+    a.setOculo(24, 30);
+    char texto[20];
+    a.getTexto(texto);
+    std::cout << texto << std::endl;
     return 0;
 }
 

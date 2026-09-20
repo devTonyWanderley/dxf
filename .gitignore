@@ -1,0 +1,73 @@
+# ==========================================
+# Pastas de Compilação (Build) externas e locais
+# ==========================================
+build/
+*build-*
+releasing/
+debug/
+release/
+
+# ==========================================
+# Configurações Pessoais do IDE (Qt Creator / VS Code / etc.)
+# ==========================================
+# Contém caminhos locais de compiladores e configurações de tela (NUNCA envie ao Git)
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.qmlproject.user
+*.qmlproject.user.*
+CMakeLists.txt.user*
+compile_commands.json
+*.autosave
+
+# ==========================================
+# Binários e Bibliotecas Geradas (C++ Geral)
+# ==========================================
+*.o
+*.obj
+*.a
+*.la
+*.lai
+*.lo
+*.slo
+*.so
+*.so.*
+*.dll
+*.dylib
+*.exe
+*.out
+*.app
+
+# ==========================================
+# Arquivos gerados automaticamente pelo ecossistema Qt
+# ==========================================
+/.qmake.cache
+/.qmake.stash
+Makefile*
+object_script.*.Release
+object_script.*.Debug
+*_plugin_import.cpp
+*_qmlcache.qrc
+*.qmlc
+*.jsc
+*.prl
+
+# Código fonte gerado por ferramentas do Qt (MOC, UI, RCC)
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# Traduções compiladas
+*.qm
+
+# Testes unitários do Qt
+target_wrapper.*
+
+# ==========================================
+# Arquivos de Sistema (Opcional, mas recomendado)
+# ==========================================
+.DS_Store
+Thumbs.db

@@ -1,11 +1,11 @@
-#	C:\Tony\DXF2\dxf2.pro
+#	C:\Tony\DXF\dxf.pro
 QT -= gui
 TARGET = main
 TEMPLATE = app
 CONFIG += c++20 console
 
 SOURCES += main.cpp \
-    Dxf2.cpp
+    Dxf.cpp
 
 HEADERS += \
-    Dxf2.hpp
+    Dxf.hpp

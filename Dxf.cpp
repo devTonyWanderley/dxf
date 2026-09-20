@@ -1,8 +1,15 @@
-//  C:\Tony\DXF2\Dxf2.cpp
-#include "Dxf2.hpp"
+//  C:\Tony\DXF\Dxf.cpp
+#include "Dxf.hpp"
 #include <fstream>
 
 #include <iostream>
+
+void DXF::viewChar::getTexto(char *tx)
+{
+    std::vector<char>::iterator it = itx + posi;
+    for(size_t i = 0; i < (posf - posi); i++) tx[i] = *(it + i);
+    tx[(posf - posi)] = 0;
+}
 
 void DXF::Dxf::Valida()
 {
@@ -34,7 +41,7 @@ std::vector<DXF::Fresta> DXF::Dxf::GetBufBruto(const std::filesystem::path &nome
     size_t numLn = NumDeLinhas(nome);
     if(!numLn) return r;
     r.reserve(numLn);
-    std::ifstream arq(nome, std::ios::in | std::ios::binary | std::ios::ate);   //  segunda passada no arquivo
+    std::ifstream arq(nome, std::ios::in | std::ios::binary | std::ios::ate);   //  segunda e quarta passadas no arquivo
     if(!arq.is_open()) return r;
     size_t arqSize = (size_t)arq.tellg();
     if(arqSize <= 0) return r;
@@ -108,7 +115,6 @@ std::uint32_t DXF::Dxf::NumPorTipo(const std::filesystem::path &nome, uint32_t &
 
 void DXF::Dxf::Ler(const std::filesystem::path &nome)
 {
-    //  --Monitorar--
     //      --As quantidades--
     uint32_t total, ttexto, duplo, i16, i32, i64, nCh;
     total = NumPorTipo(nome, ttexto, duplo, i16, i32, i64, nCh);
@@ -131,5 +137,57 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
         << nCh
         << "\n-----------------------------"
         << std::endl;
-    //  Pausa pra criar dicionário de strings
+    //--Dicionário de strings--
+    //  --Criar e dimensionar containeres--
+    std::vector<char> chars;
+    chars.reserve(nCh);
+    std::vector<viewChar> oculos;
+    oculos.reserve(ttexto);
+    //  --Abrir arquivo--
+    std::vector<Fresta> buffer = GetBufBruto(nome);
+    std::ifstream arq(nome, std::ios::in | std::ios::binary);   //  quinta passada no arquivo
+    //  --Ler strings
+    bool cod = false, isStr = false;
+    for(auto linha : buffer)
+    {
+        arq.seekg(linha.posi, std::ios::beg);
+        cod = !cod;
+        if(linha.posf == (linha.posi + 1))
+        {
+            if(arq.get() == 26) cod = !cod;
+            arq.seekg(linha.posi, std::ios::beg);
+        }
+        if(cod)
+        {
+            char tx[128];
+            size_t j = 0;
+            for(size_t i = linha.posi; i < linha.posf; i++) tx[j++] = arq.get();
+            tx[j] = 0;
+            int num = std::stoi(tx);
+            if((num >= 10 && num <= 59) || (num >= 110 && num <= 149) || (num >= 210 && num <= 239) || (num >= 460 && num <= 469) ||
+                (num >= 1010 && num <= 1059)) continue;
+            else if((num >= 60 && num <= 79) || (num >= 270 && num <= 289) || (num >= 370 && num <= 389)) continue;
+            else if((num >= 90 && num <= 99) || (num >= 440 && num <= 459) || (num >= 1060 && num <= 1071)) continue;
+            else if(num >= 160 && num <= 179) continue;
+            else isStr = true;
+        }
+        else if(isStr)
+        {
+            size_t pos = chars.size();
+            arq.seekg(linha.posi, std::ios::beg);
+            for(size_t i = linha.posi; i < linha.posf; i++) chars.push_back(arq.get());
+            viewChar v;
+            v.setFonte(chars);
+            v.setOculo(pos, chars.size());
+            oculos.push_back(v);
+            isStr = false;
+        }
+    }
+    arq.close();
+    for(auto vv : oculos)
+    {
+        char txt[128];
+        vv.getTexto(txt);
+        std::cout << txt << std::endl;
+    }
 }
