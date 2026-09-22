@@ -45,15 +45,15 @@ int main()
     //    if(itf != iLingua.begin()) imprime(linguicao, *iti, *itf);
     //    iti = itf;
     //}
-    std::vector<DXF::Fresta> fILingua = iLinguaPraIFrestas(iLingua);
-    for(auto f : fILingua)std::cout << f.posi << ' ' << f.posf << std::endl;
+    //std::vector<DXF::Fresta> fILingua = iLinguaPraIFrestas(iLingua);
+    //for(auto f : fILingua)std::cout << f.posi << ' ' << f.posf << std::endl;
 
-    DXF::viewChar a;
-    a.setFonte(linguicao);
-    a.setOculo(24, 30);
-    char texto[20];
-    a.getTexto(texto);
-    std::cout << texto << std::endl;
+    //DXF::viewChar a;
+    //a.setFonte(linguicao);
+    //a.setOculo(24, 30);
+    //char texto[20];
+    //a.getTexto(texto);
+    //std::cout << texto << std::endl;
     return 0;
 }
 

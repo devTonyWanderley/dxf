@@ -34,6 +34,7 @@ private:
     std::uint32_t NumPorTipo(const std::filesystem::path &nome, std::uint32_t &str, std::uint32_t &dbl,
                              std::uint32_t &i2, std::uint32_t &i4, std::uint32_t &i8, std::uint32_t &chr);
     void Ler(const std::filesystem::path &nome);
+    void AbreUmaVez(const std::filesystem::path &nome);
 public:
     Dxf() = default;
 

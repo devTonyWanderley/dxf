@@ -13,7 +13,8 @@ void DXF::viewChar::getTexto(char *tx)
 
 void DXF::Dxf::Valida()
 {
-    Ler("C:/Tony/Projeto/Inscopia.dxf");
+    //Ler("C:/Tony/Projeto/Inscopia.dxf");
+    AbreUmaVez("C:/Tony/Projeto/Inscopia.dxf");
 }
 
 size_t DXF::Dxf::NumDeLinhas(const std::filesystem::path &nome)
@@ -190,4 +191,94 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
         vv.getTexto(txt);
         std::cout << txt << std::endl;
     }
+}
+
+void DXF::Dxf::AbreUmaVez(const std::filesystem::path &nome)
+{
+    //--Abrir o arquivo--
+    std::ifstream arq(nome, std::ios::in | std::ios::binary | std::ios::ate);
+    if(!arq.is_open()) return;
+    //--Criar a variável local de quantidades--
+    std::vector<size_t> tamanhos;
+    tamanhos.reserve(8);    //  caracteres, linhas, ch do dicionario, string, double, uint16, uint32, uint64
+    tamanhos.push_back((size_t)arq.tellg());
+    if(tamanhos.at(0) <= 0) return;
+    arq.seekg(0, std::ios::beg);
+    char c, d = 0;
+    size_t q = 0;
+    for(size_t i = 0; i < tamanhos.at(0); i++)
+    {
+        c = d;
+        d = arq.get();
+        if((d == 10 || d == 13) && (c != 10 && c != 13)) q++;
+    }
+    tamanhos.push_back(q);
+    //--Povoar buffer--
+    std::vector<Fresta> buffer = {};
+    buffer.reserve(tamanhos.at(1));
+    arq.seekg(0, std::ios::beg);
+    Fresta fr;
+    d = 10;
+    for(size_t i = 0; i < tamanhos.at(0); i++)
+    {
+        c = d;
+        d = arq.get();
+        if((c == 10 || c == 13) && (d != 10 && d != 13)) fr.posi = i;   //  início de linha
+        else if((d == 10 || d == 13) && (c != 10 && c != 13))   //  fim de linha
+        {
+            fr.posf = i;
+            buffer.push_back(fr);
+        }
+    }
+    //--Obter as quantidades por tipo--
+    size_t str, dbl, i2, i4, i8, chr;
+    q = str = dbl = i2 = i4 = i8 = chr = 0;
+    bool cod = false, isStr = false;
+
+    std::cout
+        << tamanhos.at(0)
+        << " bytes em "
+        << tamanhos.at(1)
+        << " linhas, que correspondem a "
+        << buffer.size()
+        << ", o tamanho de \'buffer\'"
+        << std::endl;
+    arq.close();
+
+    /*
+    for(auto linha : buffer)
+    {
+        arq.seekg(linha.posi, std::ios::beg);
+        cod = !cod;
+        if(linha.posf == (linha.posi + 1))
+        {
+            if(arq.get() == 26) cod = !cod;
+            arq.seekg(linha.posi, std::ios::beg);
+        }
+        if(cod)
+        {
+            r++;
+            char tx[128];
+            size_t j = 0;
+            for(size_t i = linha.posi; i < linha.posf; i++) tx[j++] = arq.get();
+            tx[j] = 0;
+            int num = std::stoi(tx);
+            if((num >= 10 && num <= 59) || (num >= 110 && num <= 149) || (num >= 210 && num <= 239) || (num >= 460 && num <= 469) ||
+                (num >= 1010 && num <= 1059)) dbl++;
+            else if((num >= 60 && num <= 79) || (num >= 270 && num <= 289) || (num >= 370 && num <= 389)) i2++;
+            else if((num >= 90 && num <= 99) || (num >= 440 && num <= 459) || (num >= 1060 && num <= 1071)) i4++;
+            else if(num >= 160 && num <= 179) i8++;
+            else
+            {
+                str++;
+                isStr = true;
+            }
+        }
+        else if(isStr)
+        {
+            chr += (linha.posf - linha.posi);
+            isStr = false;
+        }
+    }
+    */
 }
