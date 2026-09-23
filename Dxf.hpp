@@ -5,10 +5,24 @@
 #include <limits>
 #include <vector>
 #include <filesystem>
-//#include <fstream> .. para a alteração pretendida: construtor lê o arquivo.
+#include <fstream>
 
 namespace DXF {
-enum CodGrupo{STRING, DOUBLE, I16, I32, I64};
+
+enum TpLn: std::uint8_t {NULO, GRUPO, STR, DBL, NN16, NN32, NN64};  //  novo
+
+struct Linha  //  novo
+{
+    size_t Posi = std::numeric_limits<size_t>::max();
+    size_t Posf = std::numeric_limits<size_t>::max();
+    TpLn Tipo = NULO;
+};
+
+struct ElStr  //  novo
+{
+    Linha Grupo;
+    Linha Valor;
+};
 
 struct Fresta{size_t posi = std::numeric_limits<size_t>::max(), posf = std::numeric_limits<size_t>::max();};
 
@@ -35,6 +49,11 @@ private:
                              std::uint32_t &i2, std::uint32_t &i4, std::uint32_t &i8, std::uint32_t &chr);
     void Ler(const std::filesystem::path &nome);
     void AbreUmaVez(const std::filesystem::path &nome);
+    //  reestruturação
+    size_t QuantLinhas(std::ifstream* file);
+    void rLer(const std::filesystem::path &nome);
+    std::vector<Linha> LerLinhas(std::ifstream* file, size_t n);
+    TpLn getTipo(std::ifstream* file, size_t posi, size_t posf);
 public:
     Dxf() = default;
 
