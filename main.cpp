@@ -2,58 +2,10 @@
 #include <iostream>
 #include "Dxf.hpp"
 
-//--Lidar com dicionário de char[]--
-std::vector<char> linguicao = {'C', 'A', 'S', 'A', 'B', 'E', 'C', 'O', 'A', 'N', 'T', 'A', 'Z', 'E', 'N', 'O', 'B', 'I', 'O', 'M', 'O', 'U', 'S',
-    'E', 'C', 'O', 'L', 'H', 'E', 'R', 'F', 'I', 'T', 'A', 'C', 'A', 'S', 'A', 'Z', 'E', 'N', 'O', 'B', 'I', 'O', 'A', 'N', 'T', 'A', };
-std::vector<size_t> iLingua = {0, 4, 8, 12, 19, 24, 30, 34, 38, 45, 49};
-
-void imprime(std::vector<char> &texto, size_t posi, size_t posf)
-{
-    std::cout << posi << " - " << posf << "\t\'";
-    for(auto i = posi; i < posf; i++) std::cout << texto.at(i);
-    std::cout << "\'\n";
-}
-
-std::vector<DXF::Fresta> iLinguaPraIFrestas(std::vector<size_t> &li)
-{
-    std::vector<DXF::Fresta> r;
-    if(!li.size()) return r;
-    r.reserve(li.size() - 1);
-    auto ita = li.begin();
-    for(auto it = li.begin(); it != li.end(); it++)
-    {
-        if(it != li.begin())
-        {
-            DXF::Fresta f;
-            f.posi = *ita;
-            f.posf = *it;
-            r.push_back(f);
-        }
-        ita = it;
-    }
-    return r;
-}
-
 int main()
 {
     DXF::Dxf teste;
     teste.Valida();
-    //std::cout << linguicao.size() << std::endl;
-    //std::vector<size_t>::iterator iti{}, itf{};
-    //for(itf = iLingua.begin(); itf != iLingua.end(); itf++)
-    //{
-    //    if(itf != iLingua.begin()) imprime(linguicao, *iti, *itf);
-    //    iti = itf;
-    //}
-    //std::vector<DXF::Fresta> fILingua = iLinguaPraIFrestas(iLingua);
-    //for(auto f : fILingua)std::cout << f.posi << ' ' << f.posf << std::endl;
-
-    //DXF::viewChar a;
-    //a.setFonte(linguicao);
-    //a.setOculo(24, 30);
-    //char texto[20];
-    //a.getTexto(texto);
-    //std::cout << texto << std::endl;
     return 0;
 }
 
