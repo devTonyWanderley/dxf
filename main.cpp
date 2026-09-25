@@ -1,11 +1,309 @@
 //  C:\Tony\DXF\main.cpp
 #include <iostream>
 #include "Dxf.hpp"
+#include <queue>
+
+// teste de swap de elementos
+void troca()
+{
+    struct indices
+    {
+        std::size_t pivot, n;
+    };
+    //std::queue<indices> guia;
+    std::vector<int> v = {2, 9, 5, 4, 6, 0, 7, 3, 8, 1};
+    indices iJob;
+    iJob.pivot = 0;
+    iJob.n = v.size();
+    for(size_t i = iJob.pivot + 1; i < iJob.n; i++)
+    {
+        if(v[i] < v[iJob.pivot])
+        {
+            std::swap(v[i], v[iJob.pivot]);
+            iJob.pivot++;
+            if(i != iJob.pivot) std::swap(v[i], v[iJob.pivot]);
+        }
+    }
+    for(auto vv : v) std::cout << ' ' << vv;
+    std::cout << std::endl;
+}
+
+void ordenaTrecho(std::vector<char> &lst, size_t &pvt, size_t n)
+{
+    for(size_t i = (pvt + 1); i < n; i++)
+    {
+        if(lst[i] < lst[pvt])
+        {
+            std::swap(lst[i], lst[pvt]);
+            pvt++;
+            if(pvt != i) std::swap(lst[i], lst[pvt]);
+        }
+    }
+}
+
+void chama(std::vector<char> &lst, size_t &pvt, size_t n)
+{
+    std::cout << '[' << pvt << ',' << n << "]:";
+    ordenaTrecho(lst, pvt, n);
+    for(auto v : lst) std::cout << ' ' << v;
+    std::cout << '\t' << pvt << std::endl;
+}
+
+void ordena()
+{}
 
 int main()
 {
-    DXF::Dxf teste;
-    teste.Valida();
+    //DXF::Dxf teste;
+    //teste.Valida();
+    //troca();
+    //ordena();
+    std::vector<char> v = {'V', '2', 'I', 'N', '9', 'C', 'Q', 'O', '5', 'J', '4', 'Z', 'T', 'G', '6', 'R', '1', 'D', 'A', 'L',
+                           'M', '7', 'H', '3', 'E', 'S', 'F', 'P', 'U', 'B', 'Y', '8', '0', 'X', 'K'};
+    std::cout << "Original:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << std::endl;
+    size_t p = 0, q = v.size();
+    chama(v, p, q); //  31
+
+    q = p;
+    p = 0;
+    chama(v, p, q); //  2 31
+
+    q = p;
+    p = 0;
+    chama(v, p, q); //  1 2 31
+    //  ! q-p <= 2 !!!
+
+    q = 31;
+    p = 3;
+    chama(v, p, q); //  9 1 2 31
+
+    q = p;
+    p = 3;
+    chama(v, p, q); //  5 9 1 2 31
+
+    q = p;
+    p = 3;
+    chama(v, p, q); //  4 5 9 1 2 31
+    //  ! q-p <= 2 !!!
+
+    q = 9;
+    p = 6;
+    chama(v, p, q); //  7 4 5 9 1 2 31
+
+    q = 9;
+    p = 7;
+    chama(v, p, q); //  7 7 4 5 9 1 2 31
+
+    q = 31;
+    p = 10;
+    chama(v, p, q); //  29 7 7 4 5 9 1 2 31
+
+    q = p;
+    p = 10;
+    chama(v, p, q); //  16 29 7 7 4 5 9 1 2 31
+
+    q = p;
+    p = 10;
+    chama(v, p, q); //  13 16 29 7 7 4 5 9 1 2 31
+
+    q = p;
+    p = 10;
+    chama(v, p, q); //  10 13 16 29 7 7 4 5 9 1 2 31
+
+    p = 11;
+    chama(v, p, q); //  12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = 16;
+    p = 13;
+    chama(v, p, q); //  13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    p = 14;
+    chama(v, p, q); //  15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = 29;
+    p = 17;
+    chama(v, p, q); //  22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = p;
+    p = 17;
+    chama(v, p, q); //  18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = 22;
+    p = 19;
+    chama(v, p, q); //  19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = 22;
+    p = 20;
+    chama(v, p, q); //  21 19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = 29;
+    p = 23;
+    chama(v, p, q); //  27 21 19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = p;
+    p = 23;
+    chama(v, p, q); //  25 27 21 19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = p;
+    p = 24;
+    chama(v, p, q); //  24 25 27 21 19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = v.size();
+    p = 32;
+    chama(v, p, q); //  33 24 25 27 21 19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = v.size();
+    p = 34;
+    chama(v, p, q); //  34 33 24 25 27 21 19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+
+    q = v.size();
+    p = 35;
+    chama(v, p, q); //  35 34 33 24 25 27 21 19 18 22 15 13 12 10 13 16 29 7 7 4 5 9 1 2 31
+    /*
+    ordenaTrecho(v, p, q);  // [0, full]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 2
+
+    q = p;
+    p = 0;
+    ordenaTrecho(v, p, q);  // [0, 2]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 1
+
+    q = v.size();
+    p = 3;
+    ordenaTrecho(v, p, q);  // [3, full]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 9
+
+    q = p;
+    p = 3;
+    ordenaTrecho(v, p, q);  // [3, 9]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 5
+
+    q = p;
+    p = 3;
+    ordenaTrecho(v, p, q);  // [3, 5]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 4
+
+    q = 9;
+    p = 6;
+    ordenaTrecho(v, p, q);  // [6, 9]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 7
+
+    q = 9;
+    p = 7;
+    ordenaTrecho(v, p, q);  // [7, 9]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 7
+
+    q = v.size();
+    p = 10;
+    ordenaTrecho(v, p, q);  // [10, full]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 16
+
+    q = 16;
+    p = 10;
+    ordenaTrecho(v, p, q);  // [10, 16]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 12
+
+    q = 12;
+    p = 10;
+    ordenaTrecho(v, p, q);  // [10, 12]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 10
+
+    q = 16;
+    p = 13;
+    ordenaTrecho(v, p, q);  // [13, 16]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 14
+
+    q = 16;
+    p = 14;
+    ordenaTrecho(v, p, q);  // [14, 16]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 14
+
+    q = v.size();
+    p = 17;
+    ordenaTrecho(v, p, q);  // [17, full]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 21
+
+    q = 21;
+    p = 17;
+    ordenaTrecho(v, p, q);  // [17, 21]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 17
+
+    q = 21;
+    p = 18;
+    ordenaTrecho(v, p, q);  // [18, 21]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 18
+
+    q = 21;
+    p = 19;
+    ordenaTrecho(v, p, q);  // [19, 21]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 19
+
+    q = v.size();
+    p = 22;
+    ordenaTrecho(v, p, q);  // [22, full]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 24
+
+    q = v.size();
+    p = 24;
+    ordenaTrecho(v, p, q);  // [24, full]
+    std::cout << "Ordenado:";
+    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
+    std::cout << " [pivot: " << p << ']' << std::endl;
+    //  sai 24
+    */
     return 0;
 }
 

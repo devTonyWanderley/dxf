@@ -16,6 +16,9 @@ struct Linha
     size_t Posi = std::numeric_limits<size_t>::max();
     size_t Posf = std::numeric_limits<size_t>::max();
     TpLn Tipo = NULO;
+    void getString(std::ifstream* file, char* tx);
+    bool igual_(std::ifstream *file, Linha &outra);
+    bool maior_(std::ifstream *file, Linha &outra);
 };
 
 class Dxf

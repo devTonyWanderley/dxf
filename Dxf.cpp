@@ -1,6 +1,7 @@
 //  C:\Tony\DXF\Dxf.cpp
 #include "Dxf.hpp"
 #include <fstream>
+#include <cstring>
 
 #include <iostream>
 void DXF::Dxf::Valida()
@@ -8,7 +9,38 @@ void DXF::Dxf::Valida()
     Ler("C:/Tony/Projeto/Inscopia.dxf");
 }
 
-//  reestruturação
+void DXF::Linha::getString(std::ifstream *file, char *tx)
+{
+    file->seekg(Posi, std::ios::beg);
+    size_t i = 0;
+    for(size_t j = Posi; j <= Posf; j++) tx[i++] = file->get();
+    tx[--i] = 0;
+}
+
+bool DXF::Linha::igual_(std::ifstream *file, Linha &outra)
+{
+    if(Tipo != outra.Tipo) return false;
+    if(Tipo == NULO || outra.Tipo == NULO) return false;
+    char tx0[128], tx1[128];
+    this->getString(file, tx0);
+    outra.getString(file, tx1);
+    if(Tipo == STR) return !strcmp(tx0, tx1);
+    if(Tipo == DBL) return (std::stod(tx0) == std::stod(tx1));
+    return (std::stoll(tx0) == std::stoll(tx1));
+}
+
+bool DXF::Linha::maior_(std::ifstream *file, Linha &outra)
+{
+    if(Tipo != outra.Tipo) return false;
+    if(Tipo == NULO || outra.Tipo == NULO) return false;
+    char tx0[128], tx1[128];
+    this->getString(file, tx0);
+    outra.getString(file, tx1);
+    if(Tipo == STR) return (strcmp(tx0, tx1) > 0);
+    if(Tipo == DBL) return (std::stod(tx0) > std::stod(tx1));
+    return (std::stoll(tx0) > std::stoll(tx1));
+}
+
 size_t DXF::Dxf::QuantLinhas(std::ifstream* file)
 {
     file->clear();
@@ -99,27 +131,60 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
     linhas.reserve(tamanhos.at(1));
     linhas = LerLinhas(&arq, tamanhos.at(1));
     //--Apresentar linhas brutas--
-    size_t conta = 0;
+    /*
     for(auto ln : linhas)
     {
-        std::cout << (int)ln.Tipo << " \'";
-        arq.seekg(ln.Posi, std::ios::beg);
-        for(size_t i = ln.Posi; i < ln.Posf; i++) std::cout << (char)arq.get();
-        std::cout << '\'';
-        if(conta % 2) std::cout << '\n';
-        else std::cout << '\t';
-        conta++;
+        char texto[64];
+        ln.getString(&arq, texto);
+        if(ln.Tipo == GRUPO)
+            std::cout << std::stoi(texto) << '\t';
+        else
+            std::cout << texto << '\t' << (int)ln.Tipo << std::endl;
+    }
+
+    char texto[64], outrotx[64];
+    linhas.at(1).getString(&arq, texto);
+    linhas.at(3).getString(&arq, outrotx);
+    std::cout << "Linha 1, \'" << texto << "\', eh ";
+    if(linhas.at(1).igual_(&arq, linhas.at(3)))
+        std::cout << "igual a ";
+    else
+        std::cout << "diferente de ";
+    std::cout << "linha 3, \'" << outrotx << "\'." << std::endl;
+    linhas.at(31).getString(&arq, outrotx);
+    std::cout << "Linha 1, \'" << texto << "\', eh ";
+    if(linhas.at(1).igual_(&arq, linhas.at(31)))
+        std::cout << "igual a ";
+    else
+        std::cout << "diferente de ";
+    std::cout << "linha 31, \'" << outrotx << "\'." << std::endl;
+    */
+    //--Fazer dicionário de strings--
+    //  --Adquirir a quantidade de linhas tipo STR
+    tamanhos.push_back(0);
+    for(auto ln : linhas) if(ln.Tipo == STR) tamanhos.at(2)++;
+    std::cout << "Temos " << tamanhos.at(2) << " strings!" << std::endl;
+    //  --Adquirir as linhas tipo STR
+    std::vector<size_t> iStrs;
+    iStrs.reserve(tamanhos.at(2));
+    for(size_t i = 0; i < linhas.size(); i++)
+        if(linhas.at(i).Tipo == STR) iStrs.push_back(i);
+    for(size_t i = 0; i < iStrs.size(); i++)
+    {
+        char tx[64];
+        linhas.at(iStrs.at(i)).getString(&arq, tx);
+        std::cout << iStrs.at(i) << " .. \'" << tx << '\'' << std::endl;
     }
     //{
     //  [0 - chrs no arquivo],
     //  [1 - linhas no arquivo],
-    //  [2 - linhas de grupo],
+    //  [2 - strings],
+    //  [3 - chars de string],
     //  [3 - doubles],
     //  [4 - uint16],
     //  [5 - uint32],
     //  [6 - uint64],
-    //  [7 - strings],
     //  [8 - linhas nulas],
-    //  [9 - chars de string]
+    //  [9 - linhas de grupo]
     //}
 }
