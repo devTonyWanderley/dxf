@@ -4,18 +4,31 @@
 #include <cstring>
 #include <stack>
 
+//--PROVISÓRIO PRA MONITORAMENTO--  =========================================================
 #include <iostream>
 void DXF::Dxf::Valida()
 {
     Ler("C:/Tony/Projeto/Inscopia.dxf");
 }
+//===========================================================================================
 
+//--LINHA-- =================================================================================
 void DXF::Linha::getString(std::ifstream *file, char *tx)
 {
+    file->clear();
     file->seekg(Posi, std::ios::beg);
     size_t i = 0;
-    for(size_t j = Posi; j <= Posf; j++) tx[i++] = file->get();
+    for(size_t j = Posi; j <= Posf; j++)
+    {
+        if (i >= 127) break;
+        tx[i++] = file->get();
+    }
     tx[--i] = 0;
+    while (i > 0 && (tx[i - 1] == '\r' || tx[i - 1] == '\n'))
+    {
+        i--;
+        tx[i] = '\0';
+    }
 }
 
 bool DXF::Linha::igual_(std::ifstream *file, Linha &outra)
@@ -25,7 +38,14 @@ bool DXF::Linha::igual_(std::ifstream *file, Linha &outra)
     char tx0[128], tx1[128];
     this->getString(file, tx0);
     outra.getString(file, tx1);
-    if(Tipo == STR) return !strcmp(tx0, tx1);
+    //f(Tipo == STR) return !strcmp(tx0, tx1);   //  substituir essa linha
+    if(Tipo == STR) {
+        char* p0 = tx0;
+        char* p1 = tx1;
+        while(*p0 != '\0' && *p0 <= 32) p0++;
+        while(*p1 != '\0' && *p1 <= 32) p1++;
+        return (strcmp(p0, p1) == 0);
+    }
     if(Tipo == DBL) return (std::stod(tx0) == std::stod(tx1));
     return (std::stoll(tx0) == std::stoll(tx1));
 }
@@ -37,7 +57,13 @@ bool DXF::Linha::maior_(std::ifstream *file, Linha &outra)
     char tx0[128], tx1[128];
     this->getString(file, tx0);
     outra.getString(file, tx1);
-    if(Tipo == STR) return (strcmp(tx0, tx1) > 0);
+    if(Tipo == STR) {
+        char* p0 = tx0;
+        char* p1 = tx1;
+        while(*p0 != '\0' && *p0 <= 32) p0++;
+        while(*p1 != '\0' && *p1 <= 32) p1++;
+        return (strcmp(p0, p1) > 0);
+    }
     if(Tipo == DBL) return (std::stod(tx0) > std::stod(tx1));
     return (std::stoll(tx0) > std::stoll(tx1));
 }
@@ -49,6 +75,9 @@ DXF::Linha& DXF::Linha::operator =(const Linha outra)
     Tipo = outra.Tipo;
     return *this;
 }
+//===========================================================================================
+
+//--DXF--   =================================================================================
 
 size_t DXF::Dxf::QuantLinhas(std::ifstream* file)
 {
@@ -127,11 +156,11 @@ size_t DXF::Dxf::PivotaStr(std::ifstream *file, std::vector<Linha> &lns, std::ve
     size_t p = tre.head, t = tre.tail, h = tre.head + 1;
     for(size_t i = h; i <= t; i++)
     {
-        Linha lni = lns[lst[i]], lnp = lns[lst[p]];
+        Linha lni = lns.at(lst.at(i)), lnp = lns.at(lst.at(p));
         if(lnp.maior_(file, lni))
         {
-            std::swap(lst[i], lst[p]);
-            if(++p != i) std::swap(lst[i], lst[p]);
+            std::swap(lst.at(i), lst.at(p));
+            if(++p != i) std::swap(lst.at(i), lst.at(p));
         }
     }
     return p;
@@ -187,58 +216,79 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
     //--Abrir o arquivo--
     std::ifstream arq(nome, std::ios::in | std::ios::binary | std::ios::ate);
     if(!arq.is_open()) return;
+    //=======================================================================================
+
     //--Criar a variável local de quantidades--
     std::vector<size_t> tamanhos;
     tamanhos.reserve(16);
-    tamanhos.push_back((size_t)arq.tellg());
+    tamanhos.push_back((size_t)arq.tellg());    //  tamanhos[0] <- número de caracteres
     if(tamanhos.at(0) <= 0) return;
-    tamanhos.push_back(QuantLinhas(&arq));
-    //--Apresentar primeiros tamanhos--
-    std::cout << tamanhos.at(0) << " caracteres em " << tamanhos.at(1) << " linhas" << std::endl;
+    tamanhos.push_back(QuantLinhas(&arq));    //  tamanhos[1] <- número de strings
+    //=======================================================================================
+
     //--Povoar linhas--
     std::vector<Linha> linhas = {};
     linhas.reserve(tamanhos.at(1));
     linhas = LerLinhas(&arq, tamanhos.at(1));
+    //=======================================================================================
+
     //--Fazer dicionário de strings--
     //  --Adquirir a quantidade de linhas tipo STR--
-    tamanhos.push_back(0);
+    tamanhos.push_back(0);    //  tamanhos[2] <- número de dados a serem armazenados como strings
     for(auto ln : linhas) if(ln.Tipo == STR) tamanhos.at(2)++;
-    std::cout << "Temos " << tamanhos.at(2) << " strings!" << std::endl;
-    //  --Adquirir as linhas tipo STR--
-    std::vector<size_t> iStrs;
-    iStrs.reserve(tamanhos.at(2));
-    for(size_t i = 0; i < linhas.size(); i++)
-        if(linhas.at(i).Tipo == STR) iStrs.push_back(i);
-    //..Apresentação das linhas tipo string..
-    /*
-    for(size_t i = 0; i < iStrs.size(); i++)
-    {
-        char tx[64];
-        linhas.at(iStrs.at(i)).getString(&arq, tx);
-        std::cout << iStrs.at(i) << " .. \'" << tx << '\'' << std::endl;
-    }
+    //=======================================================================================
 
-    OrdenaStr(&arq, linhas, iStrs);
-    for(size_t i = 0; i < iStrs.size(); i++)
-    {
-        char tx[64];
-        linhas.at(iStrs.at(i)).getString(&arq, tx);
-        std::cout << i << '\t' << iStrs[i] << '\t' << '\'' << tx << '\'' << std::endl;
-    }
-    char tx0[64], tx1[64];
-    linhas[197].getString(&arq, tx0);
-    linhas[315].getString(&arq, tx1);
-    std::cout << tx0 << '\n' << tx1 << '\n' << strcmp(tx0, tx1) << std::endl;
-    std::cout << iStrs.size() << std::endl;
-*/
+    //  --Adquirir as linhas tipo STR--
+    std::vector<size_t> iStrs = {};
+    iStrs.reserve(tamanhos.at(2));
+    for(size_t i = 0; i < linhas.size(); i++) if(linhas.at(i).Tipo == STR) iStrs.push_back(i);
+    //=======================================================================================
+
+    //  --Ordenar e remover duplicatas de strings--
     std::vector<size_t> ordenado = {};
     ordenado = OrdenaStrExclusivo(&arq, linhas, iStrs);
+    ordenado.shrink_to_fit();
+    //=======================================================================================
+
+    //  --Apresentar lista ordenada--
     for(size_t i = 0; i < ordenado.size(); i++)
     {
         char tx[64];
         linhas.at(ordenado.at(i)).getString(&arq, tx);
         std::cout << i << '\t' << iStrs[i] << '\t' << '\'' << tx << '\'' << std::endl;
     }
+    //=======================================================================================
+
+    //  --Adquirir o número de caracteres do buffer de char e carregar dicionário--
+    tamanhos.push_back(ordenado.size());    //  tamanhos[3] <- número de strings no dicionário
+    dicioStr.dict.reserve(tamanhos.at(3) + 1);
+    dicioStr.dict.push_back(0);
+    tamanhos.push_back(0);    //  tamanhos[4] <- número de caracteres no dicionário
+    for(size_t qc : ordenado)
+    {
+        char tx[64];
+        linhas.at(qc).getString(&arq, tx);
+        tamanhos[4] += (size_t)std::strlen(tx);
+        dicioStr.dict.push_back(tamanhos[4]);
+    }
+    dicioStr.buffer.reserve(tamanhos[4]);
+    for(size_t qc : ordenado)
+    {
+        char tx[64];
+        linhas.at(qc).getString(&arq, tx);
+        for(size_t i = 0; i < std::strlen(tx); i++) dicioStr.buffer.push_back(tx[i]);
+    }
+    //=======================================================================================
+
+    //  --Apresentar dicionário--
+    for(size_t i = 1; i < dicioStr.dict.size(); i++)
+    {
+        char tx[64];
+        dicioStr.getStr(i, tx);
+        std::cout << '\'' << tx << '\'' << std::endl;
+    }
+    //=======================================================================================
+
     //  --Ordenar as linhas tipo STR--
     //{
     //  [0 - chrs no arquivo],
@@ -253,3 +303,4 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
     //  [9 - linhas de grupo]
     //}
 }
+//===========================================================================================

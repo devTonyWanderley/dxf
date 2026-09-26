@@ -9,6 +9,8 @@
 
 namespace DXF {
 
+//--Resolver o problema da ordenação de strings começadas com espaço--  !!!
+
 enum TpLn: std::uint8_t {NULO, GRUPO, STR, DBL, NN16, NN32, NN64};
 
 struct Linha
@@ -24,9 +26,24 @@ struct Linha
 
 struct Trecho {size_t head; size_t tail;};
 
+struct DictStr
+{
+    std::vector<char> buffer = {};
+    std::vector<size_t> dict = {};
+    void getStr(size_t i, char *tx){
+        if(i < i) i = 1;
+        if(i >= dict.size()) i = dict.size() - 1;
+        //char tx[128];
+        size_t k = 0;
+        for(size_t j = dict[i - 1]; j < dict[i]; j++) tx[k++] = buffer[j];
+        tx[k] = 0;
+    }
+};
+
 class Dxf
 {
 private:
+    DictStr dicioStr;
     size_t QuantLinhas(std::ifstream* file);
     std::vector<Linha> LerLinhas(std::ifstream* file, size_t n);
     TpLn getTipo(std::ifstream* file, size_t posi, size_t posf);

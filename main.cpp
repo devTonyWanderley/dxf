@@ -2,89 +2,12 @@
 #include <iostream>
 #include "Dxf.hpp"
 
-
-#include <stack>
-
-struct Trecho {std::size_t head; std::size_t tail;};
-
-size_t Pivota(std::vector<char> &lst, Trecho tre)
-{
-    //  p <- pivot
-    //  h <- head
-    //  t <- tail
-    size_t p = tre.head, t = tre.tail, h = tre.head + 1;
-    for(size_t i = h; i <= t; i++)
-    {
-        if(lst[i] < lst[p])
-        {
-            std::swap(lst[i], lst[p]);
-            if(++p != i) std::swap(lst[i], lst[p]);
-        }
-    }
-    return p;
-}
-
-void ordena(std::vector<char> &lst)
-{
-    std::stack<Trecho> pilha;
-    Trecho tr;
-    tr.head = 0;
-    tr.tail = lst.size() - 1;
-    pilha.push(tr);
-    while(!pilha.empty())
-    {
-        size_t h = pilha.top().head, t = pilha.top().tail;
-        size_t p = Pivota(lst, pilha.top());
-        pilha.pop();
-        if(p > (h + 1))
-        {
-            tr.head = h;
-            tr.tail = p - 1;
-            pilha.push(tr);
-        }
-        if(t > (p - 1))
-        {
-            tr.head = p + 1;
-            tr.tail = t;
-            pilha.push(tr);
-        }
-    }
-}
-
-std::vector<char> ordenaExclusivo(std::vector<char> &lst)
-{
-    std::vector<char> r = {};
-    r.reserve(lst.size());
-    ordena(lst);
-    r.push_back(lst[0]);
-    for(auto e : lst)
-    {
-        if(e == r[r.size() - 1]) continue;
-        r.push_back(e);
-    }
-    return r;
-}
+//--Resolver o problema da ordenação de strings começadas com espaço--  !!!
 
 int main()
 {
     DXF::Dxf teste;
     teste.Valida();
-    /*
-    std::vector<char> v = {'V', '2', 'I', 'N', '9', 'W', 'C', 'Q', 'O', '5', 'J', '4', 'Z', 'T', 'G', '6', 'R', '1', 'D', 'A', 'L',
-                           'M', '7', 'H', '3', 'E', 'S', 'F', 'P', 'U', 'B', 'Y', '8', '0', 'X', 'A', 'R', 'A', 'R', 'A'};
-    std::cout << "Original:";
-    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
-    std::cout << std::endl;
-    std::vector<char> outro = ordenaExclusivo(v);
-    //ordena(v);
-    std::cout << "Ordenada:";
-    for(size_t i = 0; i < v.size(); i++) std::cout << ' ' << v[i];
-    std::cout << std::endl;
-    std::cout << "Exclusiv:";
-    for(auto e : outro) std::cout << ' ' << e;
-    std::cout << std::endl;
-    */
-
     return 0;
 }
 
