@@ -2,6 +2,7 @@
 #include "Dxf.hpp"
 #include <fstream>
 #include <cstring>
+#include <stack>
 
 #include <iostream>
 void DXF::Dxf::Valida()
@@ -39,6 +40,14 @@ bool DXF::Linha::maior_(std::ifstream *file, Linha &outra)
     if(Tipo == STR) return (strcmp(tx0, tx1) > 0);
     if(Tipo == DBL) return (std::stod(tx0) > std::stod(tx1));
     return (std::stoll(tx0) > std::stoll(tx1));
+}
+
+DXF::Linha& DXF::Linha::operator =(const Linha outra)
+{
+    Posi = outra.Posi;
+    Posf = outra.Posf;
+    Tipo = outra.Tipo;
+    return *this;
 }
 
 size_t DXF::Dxf::QuantLinhas(std::ifstream* file)
@@ -113,6 +122,66 @@ std::vector<DXF::Linha> DXF::Dxf::LerLinhas(std::ifstream *file, size_t n)
     return r;
 }
 
+size_t DXF::Dxf::PivotaStr(std::ifstream *file, std::vector<Linha> &lns, std::vector<size_t> &lst, Trecho tre)
+{
+    size_t p = tre.head, t = tre.tail, h = tre.head + 1;
+    for(size_t i = h; i <= t; i++)
+    {
+        Linha lni = lns[lst[i]], lnp = lns[lst[p]];
+        if(lnp.maior_(file, lni))
+        {
+            std::swap(lst[i], lst[p]);
+            if(++p != i) std::swap(lst[i], lst[p]);
+        }
+    }
+    return p;
+}
+
+void DXF::Dxf::OrdenaStr(std::ifstream *file, std::vector<Linha> &lns, std::vector<size_t> &lst)
+{
+    std::stack<Trecho> pilha;
+    Trecho tr;
+    tr.head = 0;
+    tr.tail = lst.size() - 1;
+    pilha.push(tr);
+    while(!pilha.empty())
+    {
+        size_t h = pilha.top().head, t = pilha.top().tail;
+        size_t p = PivotaStr(file, lns, lst, pilha.top());
+        pilha.pop();
+        if(p > (h + 1))
+        {
+            tr.head = h;
+            tr.tail = p - 1;
+            pilha.push(tr);
+        }
+        if(t > (p - 1))
+        {
+            tr.head = p + 1;
+            tr.tail = t;
+            pilha.push(tr);
+        }
+    }
+}
+
+std::vector<size_t> DXF::Dxf::OrdenaStrExclusivo(std::ifstream *file, std::vector<Linha> &lns, std::vector<size_t> &lst)
+{
+    std::vector<size_t> r = {};
+    r.reserve(lst.size());
+    OrdenaStr(file, lns, lst);
+    r.push_back(lst[0]);
+    for(auto ie : lst)
+    {
+        char tx[128], txa[128];
+        Linha e = lns[ie], e0 = lns[r[r.size() - 1]];
+        e.getString(file, tx);
+        e0.getString(file, txa);
+        if(!std::strcmp(tx, txa)) continue;
+        r.push_back(ie);
+    }
+    return r;
+}
+
 void DXF::Dxf::Ler(const std::filesystem::path &nome)
 {
     //--Abrir o arquivo--
@@ -130,51 +199,47 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
     std::vector<Linha> linhas = {};
     linhas.reserve(tamanhos.at(1));
     linhas = LerLinhas(&arq, tamanhos.at(1));
-    //--Apresentar linhas brutas--
-    /*
-    for(auto ln : linhas)
-    {
-        char texto[64];
-        ln.getString(&arq, texto);
-        if(ln.Tipo == GRUPO)
-            std::cout << std::stoi(texto) << '\t';
-        else
-            std::cout << texto << '\t' << (int)ln.Tipo << std::endl;
-    }
-
-    char texto[64], outrotx[64];
-    linhas.at(1).getString(&arq, texto);
-    linhas.at(3).getString(&arq, outrotx);
-    std::cout << "Linha 1, \'" << texto << "\', eh ";
-    if(linhas.at(1).igual_(&arq, linhas.at(3)))
-        std::cout << "igual a ";
-    else
-        std::cout << "diferente de ";
-    std::cout << "linha 3, \'" << outrotx << "\'." << std::endl;
-    linhas.at(31).getString(&arq, outrotx);
-    std::cout << "Linha 1, \'" << texto << "\', eh ";
-    if(linhas.at(1).igual_(&arq, linhas.at(31)))
-        std::cout << "igual a ";
-    else
-        std::cout << "diferente de ";
-    std::cout << "linha 31, \'" << outrotx << "\'." << std::endl;
-    */
     //--Fazer dicionário de strings--
-    //  --Adquirir a quantidade de linhas tipo STR
+    //  --Adquirir a quantidade de linhas tipo STR--
     tamanhos.push_back(0);
     for(auto ln : linhas) if(ln.Tipo == STR) tamanhos.at(2)++;
     std::cout << "Temos " << tamanhos.at(2) << " strings!" << std::endl;
-    //  --Adquirir as linhas tipo STR
+    //  --Adquirir as linhas tipo STR--
     std::vector<size_t> iStrs;
     iStrs.reserve(tamanhos.at(2));
     for(size_t i = 0; i < linhas.size(); i++)
         if(linhas.at(i).Tipo == STR) iStrs.push_back(i);
+    //..Apresentação das linhas tipo string..
+    /*
     for(size_t i = 0; i < iStrs.size(); i++)
     {
         char tx[64];
         linhas.at(iStrs.at(i)).getString(&arq, tx);
         std::cout << iStrs.at(i) << " .. \'" << tx << '\'' << std::endl;
     }
+
+    OrdenaStr(&arq, linhas, iStrs);
+    for(size_t i = 0; i < iStrs.size(); i++)
+    {
+        char tx[64];
+        linhas.at(iStrs.at(i)).getString(&arq, tx);
+        std::cout << i << '\t' << iStrs[i] << '\t' << '\'' << tx << '\'' << std::endl;
+    }
+    char tx0[64], tx1[64];
+    linhas[197].getString(&arq, tx0);
+    linhas[315].getString(&arq, tx1);
+    std::cout << tx0 << '\n' << tx1 << '\n' << strcmp(tx0, tx1) << std::endl;
+    std::cout << iStrs.size() << std::endl;
+*/
+    std::vector<size_t> ordenado = {};
+    ordenado = OrdenaStrExclusivo(&arq, linhas, iStrs);
+    for(size_t i = 0; i < ordenado.size(); i++)
+    {
+        char tx[64];
+        linhas.at(ordenado.at(i)).getString(&arq, tx);
+        std::cout << i << '\t' << iStrs[i] << '\t' << '\'' << tx << '\'' << std::endl;
+    }
+    //  --Ordenar as linhas tipo STR--
     //{
     //  [0 - chrs no arquivo],
     //  [1 - linhas no arquivo],

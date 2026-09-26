@@ -19,7 +19,10 @@ struct Linha
     void getString(std::ifstream* file, char* tx);
     bool igual_(std::ifstream *file, Linha &outra);
     bool maior_(std::ifstream *file, Linha &outra);
+    Linha& operator =(const Linha outra);
 };
+
+struct Trecho {size_t head; size_t tail;};
 
 class Dxf
 {
@@ -27,6 +30,9 @@ private:
     size_t QuantLinhas(std::ifstream* file);
     std::vector<Linha> LerLinhas(std::ifstream* file, size_t n);
     TpLn getTipo(std::ifstream* file, size_t posi, size_t posf);
+    size_t PivotaStr(std::ifstream* file, std::vector<Linha> &lns, std::vector<size_t> &lst, Trecho tre);
+    void OrdenaStr(std::ifstream* file, std::vector<Linha> &lns, std::vector<size_t> &lst);
+    std::vector<size_t> OrdenaStrExclusivo(std::ifstream* file, std::vector<Linha> &lns, std::vector<size_t> &lst);
     void Ler(const std::filesystem::path &nome);
 public:
     Dxf() = default;
