@@ -211,7 +211,7 @@ std::vector<size_t> DXF::Dxf::OrdenaStrExclusivo(std::ifstream *file, std::vecto
     return r;
 }
 
-void DXF::Dxf::Ler(const std::filesystem::path &nome)
+void DXF::Dxf::Ler(const std::filesystem::path &nome)   //  **particionar o 'Ler'**
 {
     //--Abrir o arquivo--
     std::ifstream arq(nome, std::ios::in | std::ios::binary | std::ios::ate);
@@ -221,9 +221,10 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
     //--Criar a variável local de quantidades--
     std::vector<size_t> tamanhos;
     tamanhos.reserve(16);
-    tamanhos.push_back((size_t)arq.tellg());    //  tamanhos[0] <- número de caracteres
+    tamanhos.push_back((size_t)arq.tellg());    //  tamanhos[0] <- número de caracteres no
+                                                //  arquivo
     if(tamanhos.at(0) <= 0) return;
-    tamanhos.push_back(QuantLinhas(&arq));    //  tamanhos[1] <- número de strings
+    tamanhos.push_back(QuantLinhas(&arq));    //  tamanhos[1] <- número de strings no arquivo
     //=======================================================================================
 
     //--Povoar linhas--
@@ -232,19 +233,20 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
     linhas = LerLinhas(&arq, tamanhos.at(1));
     //=======================================================================================
 
-    //--Fazer dicionário de strings--
-    //  --Adquirir a quantidade de linhas tipo STR--
-    tamanhos.push_back(0);    //  tamanhos[2] <- número de dados a serem armazenados como strings
+    //--Fazer dicionário de strings--               **modificar pra criar os 5 dicionários**
+    //  --Adquirir a quantidade de linhas tipo STR--    **achar as 5 quantidades**
+    tamanhos.push_back(0);      //  tamanhos[2] <- número de dados a serem armazenados como
+                                //  strings
     for(auto ln : linhas) if(ln.Tipo == STR) tamanhos.at(2)++;
     //=======================================================================================
 
-    //  --Adquirir as linhas tipo STR--
+    //  --Adquirir as linhas tipo STR--     **extender pra os 5 tipos**
     std::vector<size_t> iStrs = {};
     iStrs.reserve(tamanhos.at(2));
     for(size_t i = 0; i < linhas.size(); i++) if(linhas.at(i).Tipo == STR) iStrs.push_back(i);
     //=======================================================================================
 
-    //  --Ordenar e remover duplicatas de strings--
+    //  --Ordenar e remover duplicatas de strings--     **extender pra os 5 tipos**
     std::vector<size_t> ordenado = {};
     ordenado = OrdenaStrExclusivo(&arq, linhas, iStrs);
     ordenado.shrink_to_fit();
@@ -260,6 +262,7 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)
     //=======================================================================================
 
     //  --Adquirir o número de caracteres do buffer de char e carregar dicionário--
+    //  **extender pra os 5 tipos**
     tamanhos.push_back(ordenado.size());    //  tamanhos[3] <- número de strings no dicionário
     dicioStr.dict.reserve(tamanhos.at(3) + 1);
     dicioStr.dict.push_back(0);

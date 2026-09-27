@@ -2,8 +2,6 @@
 #include <iostream>
 #include "Dxf.hpp"
 
-//--Resolver o problema da ordenação de strings começadas com espaço--  !!!
-
 int main()
 {
     DXF::Dxf teste;

@@ -33,17 +33,27 @@ struct DictStr
     void getStr(size_t i, char *tx){
         if(i < i) i = 1;
         if(i >= dict.size()) i = dict.size() - 1;
-        //char tx[128];
         size_t k = 0;
         for(size_t j = dict[i - 1]; j < dict[i]; j++) tx[k++] = buffer[j];
         tx[k] = 0;
     }
 };
 
+template <typename T>
+struct DictNum
+{
+    std::vector<T> buffer = {};
+    std::vector<size_t> dict = {};
+};
+
 class Dxf
 {
 private:
     DictStr dicioStr;
+    DictNum<double> dicioDbl;
+    DictNum<int16_t> dicioNn16;
+    DictNum<int32_t> dicioNn32;
+    DictNum<int64_t> dicioNn64;
     size_t QuantLinhas(std::ifstream* file);
     std::vector<Linha> LerLinhas(std::ifstream* file, size_t n);
     TpLn getTipo(std::ifstream* file, size_t posi, size_t posf);
