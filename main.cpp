@@ -4,8 +4,10 @@
 
 int main()
 {
-    DXF::Dxf teste;
-    teste.Valida();
+    //DXF::Dxf teste;
+    //teste.Valida();
+    DXF::DxfDoc refinar;
+    refinar.valida();
     return 0;
 }
 

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstring>
 #include <stack>
+#include <charconv>
 
 //--PROVISÓRIO PRA MONITORAMENTO--  =========================================================
 #include <iostream>
@@ -305,5 +306,384 @@ void DXF::Dxf::Ler(const std::filesystem::path &nome)   //  **particionar o 'Ler
     //  [8 - linhas nulas],
     //  [9 - linhas de grupo]
     //}
+}
+//===========================================================================================
+
+//--DXF::DxfDoc--   =========================================================================
+void DXF::DxfDoc::valida()
+{
+    Ler("C:/Tony/Projeto/Inscopia.dxf");
+}
+
+DXF::TipoDado DXF::DxfDoc::getTipoDeStr(char *tx)
+{
+    if(tx[strlen(tx)] != 0) return TipoDado::INDEFINIDO;
+    int j = 0;
+    for(auto i = 0; i < strlen(tx); i++)
+    {
+        if((tx[i] < '0' || tx[i] > '9') && tx[i] != ' ') return TipoDado::INDEFINIDO;
+        if(tx[i] >= '0' && tx[i] <= '9') j++;
+    }
+    if(!j) return TipoDado::INDEFINIDO;
+    int v = std::stoi(tx);
+    if((v >= 0 && v < 10) || v == 100 || v == 102 || (v >= 300 && v < 310) || (v >= 470 && v < 480) || (v >= 1000 && v < 1010))
+        return TipoDado::STRING;
+    if((v >= 10 && v < 60) || (v >= 110 && v < 150) || (v >= 210 && v < 240) || (v >= 460 && v < 470) || (v >= 1010 && v < 1060))
+        return TipoDado::DOUBLE;
+    if((v >= 60 && v < 80) || (v >= 270 && v < 290) || (v >= 370 && v < 390)) return TipoDado::INT16;
+    if((v >= 90 && v < 100) || (v >= 440 && v < 460) || (v >= 1060 && v < 1072)) return TipoDado::INT32;
+    if(v >= 160 && v < 170) return TipoDado::INT64;
+    if(v == 5 || v == 105 || (v >= 320 && v < 370)) return TipoDado::HANDLE;
+    if(v >= 290 && v < 300) return TipoDado::BOOL;
+    if(v == 1004 || (v >= 310 && v < 320)) return TipoDado::BINARIO;
+    return TipoDado::INDEFINIDO;
+}
+
+std::vector<size_t> DXF::DxfDoc::getQuantidades(std::ifstream *file, size_t n)
+{
+    file->clear();
+    file->seekg(0, std::ios::beg);
+    std::vector<size_t> r = {};
+    r.reserve(12);
+    for(auto i = 0; i < 12; i++) r.push_back(0);
+    r[0] += n;  //  n° de caracteres do arquivo
+    char c, d = 10, tx[128], *p;
+    TipoDado Tipo = TipoDado::INDEFINIDO;
+    for(size_t i = 0; i < r[0]; i++)
+    {
+        c = d;
+        d = file->get();
+        if((c == 10 || c == 13) && (d == 10 || d == 13)) continue;
+        if((c == 10 || c == 13) && (d != 10 && d != 13))    //  --início da linha--
+        {
+            p = tx;
+            *p = d;
+            p++;
+        }
+        else if((c != 10 && c != 13) && (d == 10 || d == 13))   //  --fim da linha--
+        {
+            if(strlen(tx) == 1 && tx[0] < 32) continue;
+            *p = 0;
+            if(!(r[1] % 2))     //  grupo
+            {
+                std::cout << '\'' << tx << "\'\t";
+                Tipo = getTipoDeStr(tx);
+                switch (Tipo) {
+                case TipoDado::DOUBLE:
+                    r[2]++;
+                    break;
+                case TipoDado::INT16:
+                    r[3]++;
+                    break;
+                case TipoDado::INT32:
+                    r[4]++;
+                    break;
+                case TipoDado::INT64:
+                    r[5]++;
+                    break;
+                case TipoDado::STRING:
+                    r[6]++;
+                    break;
+                case TipoDado::HANDLE:
+                    r[7]++;
+                    r[11] += (size_t)strlen(tx);
+                    break;
+                case TipoDado::BOOL:
+                    r[8]++;
+                    break;
+                case TipoDado::BINARIO:
+                    r[9]++;
+                    break;
+                default:
+                    std::cout << "Tipo indefinido na linha " << (r[1] + 1) << '\t';
+                }
+            }
+            else    //  não grupo;
+            {
+                std::cout << '\'' << tx << '\'' << std::endl;
+                if(Tipo == TipoDado::STRING) r[10] += (size_t)strlen(tx);
+                else if(Tipo == TipoDado::HANDLE) r[11] += (size_t)strlen(tx);
+            }
+            if(strlen(tx) == 1 && tx[0] < 32) std::cout << "\nVeio aqui" << std::endl;
+            r[1]++;
+            if(strlen(tx) == 1 && tx[0] < 32) r[1]--;
+        }
+        else    //  meio de linha
+        {
+            *p = d;
+            p++;
+        }
+    }
+    return r;
+}
+
+void DXF::DxfDoc::Povoar(std::ifstream *file, size_t n)
+{
+    file->clear();
+    file->seekg(0, std::ios::beg);
+    std::vector<size_t> q = {};
+    q.reserve(12);
+    for(auto i = 0; i < 12; i++) q.push_back(0);
+    q[0] += n;  //  n° de caracteres do arquivo
+    char c, d = 10, tx[128], *p;
+    TipoDado Tipo = TipoDado::INDEFINIDO;
+    for(size_t i = 0; i < q[0]; i++)
+    {
+        c = d;
+        d = file->get();
+        if((c == 10 || c == 13) && (d == 10 || d == 13)) continue;
+        if((c == 10 || c == 13) && (d != 10 && d != 13))    //  --início da linha--
+        {
+            p = tx;
+            *p = d;
+            p++;
+        }
+        else if((c != 10 && c != 13) && (d == 10 || d == 13))   //  --fim da linha--
+        {
+            if(strlen(tx) == 1 && tx[0] < 32) continue;
+            *p = 0;
+            if(!(q[1] % 2))     //  grupo
+            {
+                Tipo = getTipoDeStr(tx);
+                switch (Tipo) {
+                case TipoDado::DOUBLE:
+                    q[2]++;
+                    break;
+                case TipoDado::INT16:
+                    q[3]++;
+                    break;
+                case TipoDado::INT32:
+                    q[4]++;
+                    break;
+                case TipoDado::INT64:
+                    q[5]++;
+                    break;
+                case TipoDado::STRING:
+                    q[6]++;
+                    break;
+                case TipoDado::HANDLE:
+                    q[7]++;
+                    break;
+                case TipoDado::BOOL:
+                    q[8]++;
+                    break;
+                case TipoDado::BINARIO:
+                    q[9]++;
+                    break;
+                default:
+                    break;
+                }
+            }
+            else    //  não grupo;
+            {
+                if(Tipo == TipoDado::STRING) q[10] += (size_t)strlen(tx);
+                else if(Tipo == TipoDado::HANDLE) q[11] += (size_t)strlen(tx);
+            }
+            q[1]++;
+            if(strlen(tx) == 1 && tx[0] < 32) q[1]--;
+        }
+        else    //  meio de linha
+        {
+            *p = d;
+            p++;
+        }
+    }
+    //  **monitoramento**
+    int jj = 0;
+    for(auto e : q) std::cout << jj++ << '\t' << e << std::endl;
+    //  **fim do monitoramento**
+    std::vector<double> vDbl = {};
+    std::vector<std::uint8_t> vBin = {};
+    std::vector<std::int16_t> vInt16 = {};
+    std::vector<std::int32_t> vInt32 = {};
+    std::vector<std::int64_t> vInt64 = {};
+    std::vector<char> vStr = {};
+    std::vector<size_t> iStr = {};
+    std::vector<char> vHnd = {};
+    std::vector<size_t> iHnd = {};
+    std::vector<bool> vBoo = {};
+    if(q[2]) vDbl.reserve(q[2]);
+    if(q[3]) vInt16.reserve(q[3]);
+    if(q[4]) vInt32.reserve(q[4]);
+    if(q[5]) vInt64.reserve(q[5]);
+    if(q[6]) iStr.reserve(q[6] + 1);
+    if(q[7]) iHnd.reserve(q[7] + 1);
+    if(q[8]) vBoo.reserve(q[8]);
+    if(q[9]) vBin.reserve(q[9]);
+    if(q[10]) vStr.reserve(q[10]);
+    if(q[11]) vHnd.reserve(q[11]);
+    file->clear();
+    file->seekg(0, std::ios::beg);
+    d = 10;
+    Tipo = TipoDado::INDEFINIDO;
+    size_t sPos = 0, hPos = 0;
+    for(size_t i = 0; i < q[0]; i++)
+    {
+        c = d;
+        d = file->get();
+        if((c == 10 || c == 13) && (d == 10 || d == 13)) continue;
+        if((c == 10 || c == 13) && (d != 10 && d != 13))    //  --início da linha--
+        {
+            p = tx;
+            *p = d;
+            p++;
+        }
+        else if((c != 10 && c != 13) && (d == 10 || d == 13))   //  --fim da linha--
+        {
+            if(strlen(tx) == 1 && tx[0] < 32) continue;
+            *p = 0;
+            if(!(q[1] % 2)) Tipo = getTipoDeStr(tx);
+            else    //  não grupo;
+            {
+                switch (Tipo)
+                {
+                case TipoDado::DOUBLE:
+                {
+                    double vd;
+                    auto [pd, ed] = std::from_chars(tx, tx + std::strlen(tx), vd);
+                    if(ed == std::errc{} && *pd == '\0') vDbl.push_back(vd);
+                }
+                    break;
+                case TipoDado::BINARIO:
+                {
+                    std::uint8_t vb;
+                    auto [pb, eb] = std::from_chars(tx, tx + std::strlen(tx), vb);
+                    if(eb == std::errc{} && *pb == '\0') vBin.push_back(vb);
+                }
+                    break;
+                case TipoDado::INT16:
+                {
+                    std::int16_t vI16;
+                    auto [pI, ei] = std::from_chars(tx, tx + std::strlen(tx), vI16);
+                    if(ei == std::errc{} && *pI == '\0') vInt16.push_back(vI16);
+                }
+                    break;
+                case TipoDado::INT32:
+                {
+                    std::int32_t vI32;
+                    auto [pIi, eii] = std::from_chars(tx, tx + std::strlen(tx), vI32);
+                    if(eii == std::errc{} && *pIi == '\0') vInt32.push_back(vI32);
+                }
+                    break;
+                case TipoDado::INT64:
+                {
+                    std::int16_t vI64;
+                    auto [pIii, eiii] = std::from_chars(tx, tx + std::strlen(tx), vI64);
+                    if(eiii == std::errc{} && *pIii == '\0') vInt64.push_back(vI64);
+                }
+                    break;
+                case TipoDado::BOOL:
+                {
+                    std::uint8_t vbo;
+                    auto [pbo, ebo] = std::from_chars(tx, tx + std::strlen(tx), vbo);
+                    if(ebo == std::errc{} && *pbo == '\0') vBin.push_back((vbo > 0));
+                }
+                    break;
+                case TipoDado::STRING:
+                {
+                    for(auto i = 0; i < strlen(tx); i++) vStr.push_back(tx[i]);
+                    iStr.push_back(sPos);
+                    sPos += strlen(tx);
+                }
+                    break;
+                case TipoDado::HANDLE:
+                {
+                    for(auto i = 0; i < strlen(tx); i++) vHnd.push_back(tx[i]);
+                    iHnd.push_back(hPos);
+                    hPos += strlen(tx);
+                }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        else    //  meio de linha
+        {
+            *p = d;
+            p++;
+        }
+    }
+    if(q[6]) iStr.push_back(sPos);
+    if(q[7]) iHnd.push_back(hPos);
+    //  **monitoramento**
+    if(q[2])
+    {
+        std::cout << "\tDouble: " << vDbl.size() << std::endl;
+        for(auto e : vDbl) std::cout << e << std::endl;
+    }
+    if(q[3])
+    {
+        std::cout << "\tInt16_t: " << vInt16.size() << std::endl;
+        for(auto e : vInt16) std::cout << e << std::endl;
+    }
+    if(q[4])
+    {
+        std::cout << "\tInt32_t: " << vInt32.size() << std::endl;
+        for(auto e : vInt32) std::cout << e << std::endl;
+    }
+    if(q[5])
+    {
+        std::cout << "\tInt64_t: " << vInt64.size() << std::endl;
+        for(auto e : vInt64) std::cout << e << std::endl;
+    }
+    if(q[6])
+    {
+        std::cout << "\tString: " << iStr.size() << std::endl;
+        for(auto e : iStr) std::cout << e << std::endl;
+    }
+    if(q[7])
+    {
+        std::cout << "\tHandle: " << iHnd.size() << std::endl;
+        for(auto e : iHnd) std::cout << e << std::endl;
+    }
+    if(q[8])
+    {
+        std::cout << "\tBool:\n";
+        for(auto e : vBoo) std::cout << (int)e << std::endl;
+    }
+    if(q[9])
+    {
+        std::cout << "\tBinario:\n";
+        for(auto e : vBin) std::cout << (uint8_t)e << std::endl;
+    }
+    if(q[10])
+    {
+        std::cout << "\tCaracteres de String:\n";
+        for(auto e : vStr) std::cout << (char)e;
+        std::cout << std::endl;
+    }
+    if(q[11])
+    {
+        std::cout << "\tCaracteres de Handle:\n";
+        for(auto e : vHnd) std::cout << (char)e;
+        std::cout << std::endl;
+    }
+    //  **fim do monitoramento**
+}
+
+void DXF::DxfDoc::Ler(const std::filesystem::path &nome)
+{
+    //--Abrir o arquivo--
+    std::ifstream arq(nome, std::ios::in | std::ios::binary | std::ios::ate);
+    if(!arq.is_open()) return;
+    //=======================================================================================
+
+    //--Adquirir quantidades--
+    size_t chEmArq = (size_t)arq.tellg();
+    if(!chEmArq) return;
+    /*
+    std::vector<size_t> quantidades = getQuantidades(&arq, chEmArq);
+    //=======================================================================================
+
+    //--Apresentar quantidades  **monitoramento**--
+    size_t moniInt = 0;
+    for(auto e : quantidades) std::cout << moniInt++ << '\t' << e << std::endl;
+    //=======================================================================================
+    */
+
+    //--Povoar--    **Ajuntar o 'Adquirir quantidades' com o atual**
+    Povoar(&arq, chEmArq);
+    //=======================================================================================
 }
 //===========================================================================================

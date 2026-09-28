@@ -11,7 +11,13 @@ namespace DXF {
 
 //--Resolver o problema da ordenação de strings começadas com espaço--  !!!
 
-enum TpLn: std::uint8_t {NULO, GRUPO, STR, DBL, NN16, NN32, NN64};
+enum TpLn: std::uint8_t {NULO, GRUPO, STR, DBL, NN16, NN32, NN64};  //  **refinar**
+
+enum class TipoDado: std::uint8_t   //  **versão refinada de TpLn**
+{
+    INDEFINIDO = 0, DOUBLE, INT16, INT32, INT64, STRING, HANDLE, BOOL, BINARIO
+};
+
 
 struct Linha
 {
@@ -39,14 +45,25 @@ struct DictStr
     }
 };
 
-template <typename T>
+template <typename T>   //  **refinar .. o nome e englobar os tipos string, string hexa, boleano e binários**
 struct DictNum
 {
     std::vector<T> buffer = {};
     std::vector<size_t> dict = {};
+    TipoDado tipo = TipoDado::INDEFINIDO;
 };
 
-class Dxf
+template <typename T>
+struct Dicionario    //  **versão refinada de DictNum**
+{
+    std::vector<T> buffer = {};
+    std::vector<size_t> indices = {};
+    TipoDado tipo = TipoDado::INDEFINIDO;
+
+    void Limpa(){buffer = {}; indices = {}; tipo = TipoDado::INDEFINIDO;}
+};
+
+class Dxf   //  **refinar**
 {
 private:
     DictStr dicioStr;
@@ -65,5 +82,37 @@ public:
     Dxf() = default;
 
     void Valida();
+};
+
+class DxfDoc    //  **refinamento da classe Dxf**
+{
+private:
+    //  --variáveis--
+    Dicionario<double> mDDouble;
+    Dicionario<std::int16_t> mDInt16;
+    Dicionario<std::int32_t> mDInt32;
+    Dicionario<std::int64_t> mDInt64;
+    Dicionario<std::uint8_t> mDBin;
+    Dicionario<char> mDStr;
+    Dicionario<char> mDHandle;
+    std::vector<bool> mBool;
+    //  --funções--
+    TipoDado getTipoDeStr(char *tx);
+    std::vector<size_t> getQuantidades(std::ifstream* file, size_t n);
+    void Povoar(std::ifstream* file, size_t n);
+    void Ler(const std::filesystem::path &nome);
+public:
+    DxfDoc()
+    {
+        mDDouble.tipo = TipoDado::DOUBLE;
+        mDInt16.tipo = TipoDado::INT16;
+        mDInt32.tipo = TipoDado::INT32;
+        mDInt64.tipo = TipoDado::INT64;
+        mDBin.tipo = TipoDado::BINARIO;
+        mDStr.tipo = TipoDado::STRING;
+        mDHandle.tipo = TipoDado::HANDLE;
+    }
+
+    void valida();
 };
 } // namespace DXF
