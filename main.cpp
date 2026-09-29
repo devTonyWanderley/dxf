@@ -1,13 +1,73 @@
 //  C:\Tony\DXF\main.cpp
 #include <iostream>
 #include "Dxf.hpp"
+//#include "Parse.hpp"
 
 int main()
 {
-    //DXF::Dxf teste;
+    DXF::Dxf teste;
     //teste.Valida();
-    DXF::DxfDoc refinar;
-    refinar.valida();
+    //DXF::DxfDoc refinar;
+    //refinar.valida();
+    /*ARQ::Arquivo parse;
+    if(!parse.SetArquivo("C:/Tony/Projeto/Inscopia.dxf"))
+    {
+        std::cout << "Problema com o arquivo" << std::endl;
+        return 0;
+    }
+    std::cout << parse.GetChTotal() << " caracteres em " << parse.GetLnTotal() << " linhas" << std::endl;
+    std::vector<char> cara;
+    cara.reserve(parse.GetChTotal());
+    cara = parse.GetChars();
+    //for(char c : cara) std::cout << c;
+    std::vector<size_t> indices;
+    indices.reserve(parse.GetLnTotal());
+    indices = parse.GetIndices();
+    //for(size_t i = 0; i < indices.size(); i++) std::cout << indices[i] << std::endl;
+    std::vector<char> palavra = parse.GetLinha(0);
+    std::cout << '\'';
+    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
+    std::cout << "\' primeira palavra" << std::endl;
+    palavra = parse.GetLinha(3);
+    std::cout << '\'';
+    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
+    std::cout << "\' quarta palavra" << std::endl;
+    palavra = parse.GetLinha(3497);
+    std::cout << '\'';
+    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
+    std::cout << "\' palavra 3497" << std::endl;
+    palavra = parse.GetLinha(3498);
+    std::cout << '\'';
+    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
+    std::cout << "\' palavra 3498" << std::endl;
+    palavra = parse.GetLinha(3499);
+    std::cout << '\'';
+    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
+    std::cout << "\' palavra 3499" << std::endl;
+    palavra = parse.GetLinha(3500);
+    std::cout << '\'';
+    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
+    std::cout << "\' palavra 3500" << std::endl;
+    palavra = parse.GetLinha(3501);
+    std::cout << '\'';
+    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
+    std::cout << "\' palavra 3501" << std::endl;
+
+    size_t m = parse.GetLnTotal();
+    for(size_t i = 0, k = 0; i < m; i++, k++)
+    {
+        palavra = parse.GetLinha(i);
+        if(palavra.size() == 1 && palavra[0] < 32) k++;
+        if(palavra.size() == 1 && palavra[0] < 32) continue;
+        if(k % 2) std::cout << " - \'";
+        else std::cout << i << " -> \'";
+        for(size_t j = 0; j < palavra.size(); j++) std::cout << palavra[j];
+        std::cout << '\'';
+        if(k % 2) std::cout << std::endl;
+        else std::cout << '\t';
+    }
+    */
+    teste.LerArquivo("C:/Tony/Projeto/Inscopia.dxf");
     return 0;
 }
 

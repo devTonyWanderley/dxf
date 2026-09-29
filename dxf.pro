@@ -5,7 +5,9 @@ TEMPLATE = app
 CONFIG += c++20 console
 
 SOURCES += main.cpp \
-    Dxf.cpp
+    Dxf.cpp \
+    Parse.cpp
 
 HEADERS += \
-    Dxf.hpp
+    Dxf.hpp \
+    Parse.hpp

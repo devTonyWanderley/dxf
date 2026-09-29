@@ -1,118 +1,37 @@
 //  C:\Tony\DXF\Dxf.hpp
 #pragma once
-#include <cstdlib>
-#include <cstdint>
-#include <limits>
-#include <vector>
-#include <filesystem>
-#include <fstream>
+#include "Parse.hpp"
 
-namespace DXF {
-
-//--Resolver o problema da ordenação de strings começadas com espaço--  !!!
-
-enum TpLn: std::uint8_t {NULO, GRUPO, STR, DBL, NN16, NN32, NN64};  //  **refinar**
-
-enum class TipoDado: std::uint8_t   //  **versão refinada de TpLn**
+namespace DXF
 {
-    INDEFINIDO = 0, DOUBLE, INT16, INT32, INT64, STRING, HANDLE, BOOL, BINARIO
-};
 
+enum class Grupo: std::uint8_t {GRUPO = 0, DOUBLE, INT16, INT32, INT64, STRING, HANDLE, BOOL, BINARY};
 
-struct Linha
-{
-    size_t Posi = std::numeric_limits<size_t>::max();
-    size_t Posf = std::numeric_limits<size_t>::max();
-    TpLn Tipo = NULO;
-    void getString(std::ifstream* file, char* tx);
-    bool igual_(std::ifstream *file, Linha &outra);
-    bool maior_(std::ifstream *file, Linha &outra);
-    Linha& operator =(const Linha outra);
-};
+struct EDxf {Grupo grupo = Grupo::GRUPO; size_t indice = std::numeric_limits<size_t>::max();};
 
-struct Trecho {size_t head; size_t tail;};
-
-struct DictStr
-{
-    std::vector<char> buffer = {};
-    std::vector<size_t> dict = {};
-    void getStr(size_t i, char *tx){
-        if(i < i) i = 1;
-        if(i >= dict.size()) i = dict.size() - 1;
-        size_t k = 0;
-        for(size_t j = dict[i - 1]; j < dict[i]; j++) tx[k++] = buffer[j];
-        tx[k] = 0;
-    }
-};
-
-template <typename T>   //  **refinar .. o nome e englobar os tipos string, string hexa, boleano e binários**
-struct DictNum
-{
-    std::vector<T> buffer = {};
-    std::vector<size_t> dict = {};
-    TipoDado tipo = TipoDado::INDEFINIDO;
-};
-
-template <typename T>
-struct Dicionario    //  **versão refinada de DictNum**
-{
-    std::vector<T> buffer = {};
-    std::vector<size_t> indices = {};
-    TipoDado tipo = TipoDado::INDEFINIDO;
-
-    void Limpa(){buffer = {}; indices = {}; tipo = TipoDado::INDEFINIDO;}
-};
-
-class Dxf   //  **refinar**
+class Dxf
 {
 private:
-    DictStr dicioStr;
-    DictNum<double> dicioDbl;
-    DictNum<int16_t> dicioNn16;
-    DictNum<int32_t> dicioNn32;
-    DictNum<int64_t> dicioNn64;
-    size_t QuantLinhas(std::ifstream* file);
-    std::vector<Linha> LerLinhas(std::ifstream* file, size_t n);
-    TpLn getTipo(std::ifstream* file, size_t posi, size_t posf);
-    size_t PivotaStr(std::ifstream* file, std::vector<Linha> &lns, std::vector<size_t> &lst, Trecho tre);
-    void OrdenaStr(std::ifstream* file, std::vector<Linha> &lns, std::vector<size_t> &lst);
-    std::vector<size_t> OrdenaStrExclusivo(std::ifstream* file, std::vector<Linha> &lns, std::vector<size_t> &lst);
-    void Ler(const std::filesystem::path &nome);
+    //  Não ordenado
+    std::vector<bool> mBool = {};
+
+    //  Ordenação de elementos individuais
+    std::vector<uint8_t> mBufBin = {};
+    std::vector<int16_t> mBufI16 = {};
+    std::vector<int32_t> mBufI32 = {};
+    std::vector<int64_t> mBufI64 = {};
+    std::vector<double> mBufDbl = {};
+
+    //  Ordenação de conjuntos
+    std::vector<char> mBufStr = {};
+    std::vector<char> mBufHnd = {};
+
+    //  Conjunto de índices diretores
+    std::vector<size_t> mIndStr = {};
+    std::vector<size_t> mIndHnd = {};
+    //bool LerArquivo(const std::filesystem::path &fonte);
 public:
     Dxf() = default;
-
-    void Valida();
-};
-
-class DxfDoc    //  **refinamento da classe Dxf**
-{
-private:
-    //  --variáveis--
-    Dicionario<double> mDDouble;
-    Dicionario<std::int16_t> mDInt16;
-    Dicionario<std::int32_t> mDInt32;
-    Dicionario<std::int64_t> mDInt64;
-    Dicionario<std::uint8_t> mDBin;
-    Dicionario<char> mDStr;
-    Dicionario<char> mDHandle;
-    std::vector<bool> mBool;
-    //  --funções--
-    TipoDado getTipoDeStr(char *tx);
-    std::vector<size_t> getQuantidades(std::ifstream* file, size_t n);
-    void Povoar(std::ifstream* file, size_t n);
-    void Ler(const std::filesystem::path &nome);
-public:
-    DxfDoc()
-    {
-        mDDouble.tipo = TipoDado::DOUBLE;
-        mDInt16.tipo = TipoDado::INT16;
-        mDInt32.tipo = TipoDado::INT32;
-        mDInt64.tipo = TipoDado::INT64;
-        mDBin.tipo = TipoDado::BINARIO;
-        mDStr.tipo = TipoDado::STRING;
-        mDHandle.tipo = TipoDado::HANDLE;
-    }
-
-    void valida();
+    bool LerArquivo(const std::filesystem::path &fonte);
 };
 } // namespace DXF
