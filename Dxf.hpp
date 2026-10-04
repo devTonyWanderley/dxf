@@ -7,8 +7,6 @@ namespace DXF
 
 enum class Grupo: std::uint8_t {GRUPO = 0, DOUBLE = 1, INT16 = 2, INT32 = 3, INT64 = 4, STRING = 5, HANDLE = 6, BOOL = 7, BINARY = 8};
 
-struct EDxf {Grupo grupo = Grupo::GRUPO; size_t indice = std::numeric_limits<size_t>::max();};
-
 class Dxf
 {
 private:

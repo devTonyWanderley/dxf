@@ -1,6 +1,7 @@
 //  C:\Tony\DXF\main.cpp
 #include <iostream>
 #include "Dxf.hpp"
+#include <stack>
 
 void testaARQ_Arquivo()
 {
@@ -69,12 +70,111 @@ void testaGetGrupo()
     }
 }
 
+//--ordenação sem gabarito--
+void pivotar(std::vector<char> &v, size_t &pivot, size_t &fim)
+{
+    for(size_t i = pivot + 1; i < fim; i++)
+    {
+        if(v[i] < v[pivot])
+        {
+            std::swap(v[i], v[pivot]);
+            pivot++;
+            if(i > pivot) std::swap(v[i], v[pivot]);
+        }
+    }
+}
+
+void ordena(std::vector<char> &v)
+{
+    size_t p0 = 0, f = v.size();
+    while(f > (p0 + 1))
+    {
+        size_t p = p0;
+        while(f > (p +2))
+        {
+            pivotar(v, p, f);
+            f = p;
+            p = p0;
+        }
+        p0 = f + 1;
+        f = v.size();
+    }
+}
+
+void testaPivotar()
+{
+    std::vector<char> a = {'j', 'u', 'a', 'f', 'z', 'n', 's', 'v', 'h', 't', 'w'};
+    size_t p = 0, f = a.size();
+    std::cout << p << std::endl;
+    for(auto el : a) std::cout << el << ' ';
+    pivotar(a, p, f);
+    std::cout << '\n';
+    for(auto el : a) std::cout << el << ' ';
+    std::cout << '\n';
+    std::cout << p << std::endl;
+}
+
+struct Par{size_t Hard, Tail;};
+
+size_t Particiona(std::vector<char> &v, size_t hard, size_t tail)
+{
+    size_t i = hard;
+    for(size_t j = hard; j < (tail - 1); j++) {if(v[j] < v[tail - 1]) {std::swap(v[i++], v[j]);}}
+    std::swap(v[i], v[tail - 1]);
+    return i;
+}
+
+void Ordena(std::vector<char> &v)
+{
+    if(v.size() < 2) return;
+    std::stack<Par> w;
+    w.push({0, v.size()});
+    while(!w.empty())
+    {
+        Par atual = w.top();
+        w.pop();
+        size_t p = Particiona(v, atual.Hard, atual.Tail), q;
+        q = p + 1;
+        if(atual.Tail > (q + 1))
+        {
+            if(p > (atual.Hard + 1))
+            {
+                if((atual.Tail - q) > (p - atual.Hard))
+                {
+                    w.push({q, atual.Tail});
+                    w.push({atual.Hard, p});
+                }
+                else
+                {
+                    w.push({atual.Hard, p});
+                    w.push({q, atual.Tail});
+                }
+            }
+            else w.push({q, atual.Tail});
+        }
+        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
+    }
+}
+
+void testaOrdena()
+{
+    std::vector<char> a = {'r', 'd', 'j', 'u', 'l', 'q', 'a', 'f', 'c', 'e', 'm', 'z', 'n', 'k', 's', 'v', 'g', 'h', 'o', 't', 'w', 'b', 'i', 'p'};
+    std::cout << '\n';
+    for(auto el : a) std::cout << el << ' ';
+    Ordena(a);
+    std::cout << '\n';
+    for(auto el : a) std::cout << el << ' ';
+    std::cout << '\n';
+}
+
 int main()
 {
     //testaARQ_Arquivo();   //  ..ok..
     //testaGetGrupo();      //  ..ok..
-    DXF::Dxf teste;
-    teste.valida("C:/Tony/Projeto/Inscopia.dxf");
+    //DXF::Dxf teste;
+    //teste.valida("C:/Tony/Projeto/Inscopia.dxf");
+    //testaPivotar();
+    testaOrdena();
     return 0;
 }
 
