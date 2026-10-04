@@ -69,3 +69,13 @@ std::vector<char> ARQ::Arquivo::GetLinha(size_t n)
     }
     return r;
 }
+
+std::vector<char> ARQ::Arquivo::GetLinha(size_t n, char *tx)
+{
+    tx[0] = 0;
+    std::vector<char> r = GetLinha(n);
+    size_t i = 0;
+    for(; i < r.size(); i++) tx[i] = r[i];
+    tx[i] = 0;
+    return r;
+}

@@ -5,7 +5,7 @@
 namespace DXF
 {
 
-enum class Grupo: std::uint8_t {GRUPO = 0, DOUBLE, INT16, INT32, INT64, STRING, HANDLE, BOOL, BINARY};
+enum class Grupo: std::uint8_t {GRUPO = 0, DOUBLE = 1, INT16 = 2, INT32 = 3, INT64 = 4, STRING = 5, HANDLE = 6, BOOL = 7, BINARY = 8};
 
 struct EDxf {Grupo grupo = Grupo::GRUPO; size_t indice = std::numeric_limits<size_t>::max();};
 
@@ -29,9 +29,18 @@ private:
     //  Conjunto de índices diretores
     std::vector<size_t> mIndStr = {};
     std::vector<size_t> mIndHnd = {};
-    //bool LerArquivo(const std::filesystem::path &fonte);
+
+    //Grupo getGrupo(int16_t gr);
+    //Grupo getGrupo(char *str);
+    //Grupo getGrupo(std::vector<char> &v);
+    bool LerArquivo(const std::filesystem::path &fonte);
 public:
     Dxf() = default;
-    bool LerArquivo(const std::filesystem::path &fonte);
+    bool valida(const std::filesystem::path &fonte){return LerArquivo(fonte);}
+
+
+    Grupo getGrupo(int16_t gr);
+    Grupo getGrupo(char *str);
+    Grupo getGrupo(std::vector<char> &v);
 };
 } // namespace DXF

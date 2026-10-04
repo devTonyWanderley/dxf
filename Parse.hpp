@@ -25,5 +25,6 @@ public:
     std::vector<size_t> GetIndices(){return mIndices;}
     std::vector<char> GetChars();
     std::vector<char> GetLinha(size_t n);
+    std::vector<char> GetLinha(size_t n, char *tx);
 };
 } // namespace ARQ

@@ -1,73 +1,80 @@
 //  C:\Tony\DXF\main.cpp
 #include <iostream>
 #include "Dxf.hpp"
-//#include "Parse.hpp"
+
+void testaARQ_Arquivo()
+{
+    ARQ::Arquivo teste;
+    teste.SetArquivo("C:/Tony/Projeto/Inscopia.dxf");
+    size_t numLinhas = teste.GetLnTotal();
+    std::cout << numLinhas << " linhas" << std::endl;
+    char str[128];
+    std::cout << "Teste de ARQ::Arquivo ... as primeiras cinco linhas:" << std::endl;
+    for(size_t i = 0; i < 5; i++)
+    {
+        teste.GetLinha(i, str);
+        std::cout << i << '\t' << str << std::endl;
+    }
+    std::cout << "... as ultimas cinco linhas:" << std::endl;
+    for(size_t i = (numLinhas - 5); i < numLinhas; i++)
+    {
+        teste.GetLinha(i, str);
+        std::cout << i << '\t' << str << std::endl;
+    }
+}
+
+void testaGetGrupo()
+{
+    DXF::Dxf teste;
+    teste.valida("C:/Tony/Projeto/Inscopia.dxf");
+    std::vector<int16_t> numeros = {
+                                     0, 4, 6, 9, 100, 102, 300, 309, 430, 439, 470, 479, 1000, 1003, 10, 59, 110, 149, 210,
+                                     239, 410, 469, 1010, 1059, 60, 79, 270, 289, 370, 389, 90, 99, 440, 459, 160, 169, 1060,
+                                    1071, 5, 105, 320, 369, 290, 299, 310, 319, 1004
+    };
+    for(size_t i = 0; i < numeros.size(); i++)
+    {
+        //  **obs: a linha abaixo depende de alterar o acesso a "getGrupo"**
+        DXF::Grupo g = teste.getGrupo(numeros[i]);
+        //==================================================================
+        switch (g) {
+        case DXF::Grupo::BINARY:
+            std::cout << numeros[i] << '\t' << "Binario" << std::endl;
+            break;
+        case DXF::Grupo::BOOL:
+            std::cout << numeros[i] << '\t' << "Booleano" << std::endl;
+            break;
+        case DXF::Grupo::DOUBLE:
+            std::cout << numeros[i] << '\t' << "Double" << std::endl;
+            break;
+        case DXF::Grupo::HANDLE:
+            std::cout << numeros[i] << '\t' << "Handle" << std::endl;
+            break;
+        case DXF::Grupo::INT16:
+            std::cout << numeros[i] << '\t' << "INT16" << std::endl;
+            break;
+        case DXF::Grupo::INT32:
+            std::cout << numeros[i] << '\t' << "INT32" << std::endl;
+            break;
+        case DXF::Grupo::INT64:
+            std::cout << numeros[i] << '\t' << "INT64" << std::endl;
+            break;
+        case DXF::Grupo::STRING:
+            std::cout << numeros[i] << '\t' << "String" << std::endl;
+            break;
+        default:
+            std::cout << numeros[i] << '\t' << "Grupo" << std::endl;
+            break;
+        }
+    }
+}
 
 int main()
 {
+    //testaARQ_Arquivo();   //  ..ok..
+    //testaGetGrupo();      //  ..ok..
     DXF::Dxf teste;
-    //teste.Valida();
-    //DXF::DxfDoc refinar;
-    //refinar.valida();
-    /*ARQ::Arquivo parse;
-    if(!parse.SetArquivo("C:/Tony/Projeto/Inscopia.dxf"))
-    {
-        std::cout << "Problema com o arquivo" << std::endl;
-        return 0;
-    }
-    std::cout << parse.GetChTotal() << " caracteres em " << parse.GetLnTotal() << " linhas" << std::endl;
-    std::vector<char> cara;
-    cara.reserve(parse.GetChTotal());
-    cara = parse.GetChars();
-    //for(char c : cara) std::cout << c;
-    std::vector<size_t> indices;
-    indices.reserve(parse.GetLnTotal());
-    indices = parse.GetIndices();
-    //for(size_t i = 0; i < indices.size(); i++) std::cout << indices[i] << std::endl;
-    std::vector<char> palavra = parse.GetLinha(0);
-    std::cout << '\'';
-    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
-    std::cout << "\' primeira palavra" << std::endl;
-    palavra = parse.GetLinha(3);
-    std::cout << '\'';
-    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
-    std::cout << "\' quarta palavra" << std::endl;
-    palavra = parse.GetLinha(3497);
-    std::cout << '\'';
-    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
-    std::cout << "\' palavra 3497" << std::endl;
-    palavra = parse.GetLinha(3498);
-    std::cout << '\'';
-    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
-    std::cout << "\' palavra 3498" << std::endl;
-    palavra = parse.GetLinha(3499);
-    std::cout << '\'';
-    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
-    std::cout << "\' palavra 3499" << std::endl;
-    palavra = parse.GetLinha(3500);
-    std::cout << '\'';
-    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
-    std::cout << "\' palavra 3500" << std::endl;
-    palavra = parse.GetLinha(3501);
-    std::cout << '\'';
-    for(size_t i = 0; i < palavra.size(); i++) std::cout << palavra[i];
-    std::cout << "\' palavra 3501" << std::endl;
-
-    size_t m = parse.GetLnTotal();
-    for(size_t i = 0, k = 0; i < m; i++, k++)
-    {
-        palavra = parse.GetLinha(i);
-        if(palavra.size() == 1 && palavra[0] < 32) k++;
-        if(palavra.size() == 1 && palavra[0] < 32) continue;
-        if(k % 2) std::cout << " - \'";
-        else std::cout << i << " -> \'";
-        for(size_t j = 0; j < palavra.size(); j++) std::cout << palavra[j];
-        std::cout << '\'';
-        if(k % 2) std::cout << std::endl;
-        else std::cout << '\t';
-    }
-    */
-    teste.LerArquivo("C:/Tony/Projeto/Inscopia.dxf");
+    teste.valida("C:/Tony/Projeto/Inscopia.dxf");
     return 0;
 }
 
