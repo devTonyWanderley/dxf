@@ -1,291 +1,40 @@
 //  C:\Tony\DXF\main.cpp
 #include <iostream>
 #include "Dxf.hpp"
-#include <stack>
 
-void testaARQ_Arquivo()
+//--Dxf.hpp / cpp--
+void tDxf()
 {
-    ARQ::Arquivo teste;
-    teste.SetArquivo("C:/Tony/Projeto/Inscopia.dxf");
-    size_t numLinhas = teste.GetLnTotal();
-    std::cout << numLinhas << " linhas" << std::endl;
-    char str[128];
-    std::cout << "Teste de ARQ::Arquivo ... as primeiras cinco linhas:" << std::endl;
-    for(size_t i = 0; i < 5; i++)
-    {
-        teste.GetLinha(i, str);
-        std::cout << i << '\t' << str << std::endl;
-    }
-    std::cout << "... as ultimas cinco linhas:" << std::endl;
-    for(size_t i = (numLinhas - 5); i < numLinhas; i++)
-    {
-        teste.GetLinha(i, str);
-        std::cout << i << '\t' << str << std::endl;
-    }
+    DXF::Dxf arquivo;
+    arquivo.valida("C:/Tony/Soft/cpp/integrado/sistemaIntegrado/CPP/INSTANCIA/TMP/20260710152627.tmp");
 }
-
-void testaGetGrupo()
+void tOrdenaQS()
 {
-    DXF::Dxf teste;
-    teste.valida("C:/Tony/Projeto/Inscopia.dxf");
-    std::vector<int16_t> numeros = {
-                                     0, 4, 6, 9, 100, 102, 300, 309, 430, 439, 470, 479, 1000, 1003, 10, 59, 110, 149, 210,
-                                     239, 410, 469, 1010, 1059, 60, 79, 270, 289, 370, 389, 90, 99, 440, 459, 160, 169, 1060,
-                                    1071, 5, 105, 320, 369, 290, 299, 310, 319, 1004
-    };
-    for(size_t i = 0; i < numeros.size(); i++)
-    {
-        //  **obs: a linha abaixo depende de alterar o acesso a "getGrupo"**
-        DXF::Grupo g = teste.getGrupo(numeros[i]);
-        //==================================================================
-        switch (g) {
-        case DXF::Grupo::BINARY:
-            std::cout << numeros[i] << '\t' << "Binario" << std::endl;
-            break;
-        case DXF::Grupo::BOOL:
-            std::cout << numeros[i] << '\t' << "Booleano" << std::endl;
-            break;
-        case DXF::Grupo::DOUBLE:
-            std::cout << numeros[i] << '\t' << "Double" << std::endl;
-            break;
-        case DXF::Grupo::HANDLE:
-            std::cout << numeros[i] << '\t' << "Handle" << std::endl;
-            break;
-        case DXF::Grupo::INT16:
-            std::cout << numeros[i] << '\t' << "INT16" << std::endl;
-            break;
-        case DXF::Grupo::INT32:
-            std::cout << numeros[i] << '\t' << "INT32" << std::endl;
-            break;
-        case DXF::Grupo::INT64:
-            std::cout << numeros[i] << '\t' << "INT64" << std::endl;
-            break;
-        case DXF::Grupo::STRING:
-            std::cout << numeros[i] << '\t' << "String" << std::endl;
-            break;
-        default:
-            std::cout << numeros[i] << '\t' << "Grupo" << std::endl;
-            break;
-        }
-    }
-}
-
-//--ordenação sem gabarito--
-void pivotar(std::vector<char> &v, size_t &pivot, size_t &fim)
-{
-    for(size_t i = pivot + 1; i < fim; i++)
-    {
-        if(v[i] < v[pivot])
-        {
-            std::swap(v[i], v[pivot]);
-            pivot++;
-            if(i > pivot) std::swap(v[i], v[pivot]);
-        }
-    }
-}
-
-void ordena(std::vector<char> &v)
-{
-    size_t p0 = 0, f = v.size();
-    while(f > (p0 + 1))
-    {
-        size_t p = p0;
-        while(f > (p +2))
-        {
-            pivotar(v, p, f);
-            f = p;
-            p = p0;
-        }
-        p0 = f + 1;
-        f = v.size();
-    }
-}
-
-void testaPivotar()
-{
-    std::vector<char> a = {'j', 'u', 'a', 'f', 'z', 'n', 's', 'v', 'h', 't', 'w'};
-    size_t p = 0, f = a.size();
-    std::cout << p << std::endl;
-    for(auto el : a) std::cout << el << ' ';
-    pivotar(a, p, f);
+    std::vector<char> ch = {'M', 'u', 's', 'i', 'c', 'a', 'P', 'o', 'p', 'u', 'l', 'a', 'r', 'B', 'r', 'a', 's', 'i', 'l', 'e', 'i', 'r', 'a'};
+    std::vector<double> db = {3.14, 2.78, -1.68, 45, 299761468};
+    std::vector<int> in = {3, -2, 1, 2, 14, -78};
+    for(auto e : ch) std::cout << e << ' ';
     std::cout << '\n';
-    for(auto el : a) std::cout << el << ' ';
+    Dados::OrdenaQS<std::vector<char>>(ch);
+    for(auto e : ch) std::cout << e << ' ';
     std::cout << '\n';
-    std::cout << p << std::endl;
-}
-
-struct Par{size_t Hard, Tail;};
-
-size_t Particiona(std::vector<char> &v, size_t hard, size_t tail)
-{
-    size_t i = hard;
-    for(size_t j = hard; j < (tail - 1); j++) {if(v[j] < v[tail - 1]) {std::swap(v[i++], v[j]);}}
-    std::swap(v[i], v[tail - 1]);
-    return i;
-}
-
-void Ordena(std::vector<char> &v)
-{
-    if(v.size() < 2) return;
-    std::stack<Par> w;
-    w.push({0, v.size()});
-    while(!w.empty())
-    {
-        Par atual = w.top();
-        w.pop();
-        size_t p = Particiona(v, atual.Hard, atual.Tail), q;
-        q = p + 1;
-        if(atual.Tail > (q + 1))
-        {
-            if(p > (atual.Hard + 1))
-            {
-                if((atual.Tail - q) > (p - atual.Hard))
-                {
-                    w.push({q, atual.Tail});
-                    w.push({atual.Hard, p});
-                }
-                else
-                {
-                    w.push({atual.Hard, p});
-                    w.push({q, atual.Tail});
-                }
-            }
-            else w.push({q, atual.Tail});
-        }
-        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
-    }
-}
-
-void testaOrdena()
-{
-    std::vector<char> a = {'r', 'd', 'j', 'u', 'l', 'q', 'a', 'f', 'c', 'e', 'm', 'z', 'n', 'k', 's', 'v', 'g', 'h', 'o', 't', 'w', 'b', 'i', 'p'};
+    for(auto e : db) std::cout << e << ' ';
     std::cout << '\n';
-    for(auto el : a) std::cout << el << ' ';
-    Ordena(a);
+    Dados::OrdenaQS<std::vector<double>>(db);
+    for(auto e : db) std::cout << e << ' ';
     std::cout << '\n';
-    for(auto el : a) std::cout << el << ' ';
+    for(auto e : in) std::cout << e << ' ';
+    std::cout << '\n';
+    Dados::OrdenaQS<std::vector<int>>(in);
+    for(auto e : in) std::cout << e << ' ';
     std::cout << '\n';
 }
+
 
 int main()
 {
-    //testaARQ_Arquivo();   //  ..ok..
-    //testaGetGrupo();      //  ..ok..
-    //DXF::Dxf teste;
-    //teste.valida("C:/Tony/Projeto/Inscopia.dxf");
-    //testaPivotar();
-    testaOrdena();
+    std::cout << "Hello, World!" << std::endl;
+    //tDxf();
+    tOrdenaQS();
     return 0;
 }
-
-/*
- * # Códigos de Grupo DXF - Tipo de Dados por Intervalo
-
-Este documento serve como referência rápida para o desenvolvimento de parsers e geradores de arquivos DXF
-(Drawing Exchange Format).
-Os códigos de grupo determinam o tipo de dado (formato) do valor que o sucede na linha seguinte.
-
-## 📝 Strings (Textos e Identificadores)
-
-| Intervalo de Códigos | Tipo de Dado | Descrição Comum |
-| :--- | :--- | :--- |
-| **0 a 9** | String | Nomes de entidades, camadas, blocos, estilos ou textos principais |
-| **100** | String | Marcador de subclasse (limite de classe de dados) |
-| **102** | String | Início/fim de grupos de aplicação ("{nome_aplicacao" ou "}") |
-| **300 a 309** | String | Textos arbitrários (comentários, dados de terceiros ou IDs textuais) |
-| **430 a 439** | String | Nomes de cores provenientes de catálogos (ex: PANTONE) |
-| **470 a 479** | String | Identificadores de propriedades e estados do sistema |
-| **1000 a 1003** | String | Dados estendidos de aplicação (XDATA) |
-
-## 🔢 Números Decimais (Ponto Flutuante / Double)
-
-| Intervalo de Códigos | Tipo de Dado | Descrição Comum |
-| :--- | :--- | :--- |
-| **10 a 59** | Double | Coordenadas geométricas iniciais (X/Y/Z), raios, distâncias e ângulos |
-| **110 a 149** | Double | Coordenadas de vetores de direção, pontos de controle ou matrizes |
-| **210 a 239** | Double | Vetores de direção de extrusão espacial (X/Y/Z) |
-| **460 a 469** | Double | Valores de ponto flutuante de precisão dupla (escalas, opacidade) |
-| **1010 a 1059** | Double | Valores de ponto flutuante em dados estendidos (XDATA) |
-
-## 📐 Números Inteiros (Integer)
-
-| Intervalo de Códigos | Tipo de Dado | Tamanho / Descrição |
-| :--- | :--- | :--- |
-| **60 a 79** | Inteiro de 16-bit | Flags de status, modos visíveis, contadores e booleanos |
-| **90 a 99** | Inteiro de 32-bit | Inteiros longos (identificadores numéricos, contagens de vértices) |
-| **160 a 169** | Inteiro de 64-bit | Grandes contadores de objetos ou timestamps do sistema |
-| **270 a 289** | Inteiro de 16-bit | Flags curtas de configuração e estados de exibição |
-| **370 a 379** | Inteiro de 16-bit | Índices de espessura de linha (Lineweight) |
-| **380 a 389** | Inteiro de 16-bit | Métodos e flags de plotagem |
-| **440 a 449** | Inteiro de 32-bit | Valores inteiros para transparência de cor |
-| **450 a 459** | Inteiro de 32-bit | Atributos internos do sistema (renderização e hachuras) |
-| **1060 a 1071** | Inteiro | Valores inteiros de 16 e 32 bits em dados estendidos (XDATA) |
-
-## 🔑 Identificadores Hexadecimais (Handles / IDs de Ponteiro)
-
-| Intervalo de Códigos | Tipo de Dado | Descrição Comum |
-| :--- | :--- | :--- |
-| **5** | String Hex | Handle único do objeto/entidade dentro do desenho |
-| **105** | String Hex | Handle de tabela gráfica (idêntico ao código 5 em tabelas) |
-| **320 a 329** | String Hex | Referências de ponteiros para handles de objetos proprietários |
-| **330 a 339** | String Hex | ID de ponteiro (Soft pointer) para objetos contêineres/pais |
-| **340 a 349** | String Hex | ID de ponteiro (Hard pointer) para objetos associados |
-| **350 a 359** | String Hex | ID de referência direta (Soft owner) |
-| **360 a 369** | String Hex | ID de referência direta (Hard owner) |
-
-## 🧬 Binários e Booleanos
-
-| Intervalo de Códigos | Tipo de Dado | Descrição Comum |
-| :--- | :--- | :--- |
-| **290 a 299** | Booleano | Flags de verdadeiro/falso (`0` ou `1`) |
-| **310 a 319** | Binário (Hex) | Blocos de dados binários brutos (imagens, dados embutidos) |
-| **1004** | Binário (Hex) | Dados binários em blocos estendidos (XDATA) |
-
---Em ordem--
-| Intervalo de Códigos | Tipo de Dado | Descrição Comum |
-| :--- | :--- | :--- |
-| **0 a 4** | String | Nomes de entidades, camadas, blocos, estilos ou textos principais |
-| **5** | String Hex | Handle único do objeto/entidade dentro do desenho |
-| **6 a 9** | String | Nomes de entidades, camadas, blocos, estilos ou textos principais |
-| **10 a 59** | Double | Coordenadas geométricas iniciais (X/Y/Z), raios, distâncias e ângulos |
-| **60 a 79** | Inteiro de 16-bit | Flags de status, modos visíveis, contadores e booleanos |
-| **90 a 99** | Inteiro de 32-bit | Inteiros longos (identificadores numéricos, contagens de vértices) |
-| **100** | String | Marcador de subclasse (limite de classe de dados) |
-| **102** | String | Início/fim de grupos de aplicação ("{nome_aplicacao" ou "}") |
-| **105** | String Hex | Handle de tabela gráfica (idêntico ao código 5 em tabelas) |
-| **110 a 149** | Double | Coordenadas de vetores de direção, pontos de controle ou matrizes |
-| **160 a 169** | Inteiro de 64-bit | Grandes contadores de objetos ou timestamps do sistema |
-| **210 a 239** | Double | Vetores de direção de extrusão espacial (X/Y/Z) |
-| **270 a 289** | Inteiro de 16-bit | Flags curtas de configuração e estados de exibição |
-| **290 a 299** | Booleano | Flags de verdadeiro/falso (`0` ou `1`) |
-| **300 a 309** | String | Textos arbitrários (comentários, dados de terceiros ou IDs textuais) |
-| **310 a 319** | Binário (Hex) | Blocos de dados binários brutos (imagens, dados embutidos) |
-| **320 a 329** | String Hex | Referências de ponteiros para handles de objetos proprietários |
-| **330 a 339** | String Hex | ID de ponteiro (Soft pointer) para objetos contêineres/pais |
-| **340 a 349** | String Hex | ID de ponteiro (Hard pointer) para objetos associados |
-| **350 a 359** | String Hex | ID de referência direta (Soft owner) |
-| **360 a 369** | String Hex | ID de referência direta (Hard owner) |
-| **370 a 379** | Inteiro de 16-bit | Índices de espessura de linha (Lineweight) |
-| **380 a 389** | Inteiro de 16-bit | Métodos e flags de plotagem |
-| **430 a 439** | String | Nomes de cores provenientes de catálogos (ex: PANTONE) |
-| **440 a 449** | Inteiro de 32-bit | Valores inteiros para transparência de cor |
-| **450 a 459** | Inteiro de 32-bit | Atributos internos do sistema (renderização e hachuras) |
-| **460 a 469** | Double | Valores de ponto flutuante de precisão dupla (escalas, opacidade) |
-| **470 a 479** | String | Identificadores de propriedades e estados do sistema |
-| **1000 a 1003** | String | Dados estendidos de aplicação (XDATA) |
-| **1004** | Binário (Hex) | Dados binários em blocos estendidos (XDATA) |
-| **1010 a 1059** | Double | Valores de ponto flutuante em dados estendidos (XDATA) |
-| **1060 a 1071** | Inteiro | Valores inteiros de 16 e 32 bits em dados estendidos (XDATA) |
-
-## ⚠️ Lacunas e Códigos Especiais (Exceções da Especificação)
-
-O padrão DXF possui intervalos vagos ou reservados que não seguem a distribuição contínua.
-Ao construir o parser, trate-os seguindo estas regras:
-* **80 a 89**: Intervalo reservado/não documentado. Deve ser ignorado no mapeamento padrão de tipos.
-* **101**: String (Texto complementar de sistema).
-* **103 e 104**: Códigos contextuais de controle (variam conforme o objeto, comumente associados a dados de renderização e iluminação).
-* **106 a 109**: Intervalo reservado/não documentado.
-* **1005 (XDATA)**: String Hexadecimal representando um Handle associado a dados estendidos.
-* **1006 a 1009 (XDATA)**: Códigos reservados/não utilizados em dados estendidos (o padrão pula diretamente para as coordenadas no grupo 1010).
-
-*/

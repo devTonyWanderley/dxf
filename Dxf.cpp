@@ -75,59 +75,6 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
     if(!arq.SetArquivo(fonte)) return false;
     //======================================
 
-    /*--Testar a identificação de linha como grupo--
-    size_t numLinhas = arq.GetLnTotal();
-    std::cout << "numero de linhas: " << numLinhas << std::endl;
-    char str[256];
-    bool isGrupo = false;
-    for(size_t i = 0; i < numLinhas; i++)
-    {
-        arq.GetLinha(i, str);
-        isGrupo = !isGrupo;
-        if(strlen(str) == 1 && str[0] < 32) isGrupo = !isGrupo;
-        else
-        {
-            if(isGrupo)
-            {
-                Grupo grupo = getGrupo(str);
-                char gStr[16];
-                switch (grupo) {
-                case Grupo::BINARY:
-                    strcpy(gStr, "Binario");
-                    break;
-                case Grupo::BOOL:
-                    strcpy(gStr, "Booleano");
-                    break;
-                case Grupo::DOUBLE:
-                    strcpy(gStr, "Double");
-                    break;
-                case Grupo::HANDLE:
-                    strcpy(gStr, "Handle");
-                    break;
-                case Grupo::INT16:
-                    strcpy(gStr, "I16");
-                    break;
-                case Grupo::INT32:
-                    strcpy(gStr, "I32");
-                    break;
-                case Grupo::INT64:
-                    strcpy(gStr, "I64");
-                    break;
-                case Grupo::STRING:
-                    strcpy(gStr, "String");
-                    break;
-                default:
-                    strcpy(gStr, "Indefinido");
-                    break;
-                }
-                std::cout << i << '\t' << gStr << "\t\'" << str << "\'\t";
-            }
-            else std::cout << '\'' << str << '\'' << std::endl;
-        }
-    }
-    //====================================================================  //  ..ok..
-*/
-
     //--Obter a quantidade de linhas por tipo--
     size_t numLinhas = arq.GetLnTotal();
     char str[256];
@@ -180,7 +127,7 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
             }
         }
     }
-    for(size_t i = 0; i < quantidades.size(); i++) std::cout << quantidades[i] << std::endl;
+    //for(size_t i = 0; i < quantidades.size(); i++) std::cout << quantidades[i] << std::endl;
     //======================================================================================    //  ..ok..
 
     //--Povoar buffer's locais--
@@ -255,6 +202,7 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
             }
         }
     }
+    /*
     std::cout << "Booleano:" << std::endl;
     for(size_t i = 0; i < vBool.size(); i++) std::cout << vBool[i] << std::endl;
     std::cout << "Binario:" << std::endl;
@@ -275,9 +223,36 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
     for(size_t i = 0; i < vIndStr.size(); i++) std::cout << vIndStr[i] << std::endl;
     std::cout << "iHandle:" << std::endl;
     for(size_t i = 0; i < vIndHnd.size(); i++) std::cout << vIndHnd[i] << std::endl;
+    */
     //==========================================================================================    ..ok..
 
     //--Ordenar, remover repetições e fazer dicionários--
+    std::cout << "Binario: " << vBufBin.size()
+              << "\nI16 " << vBufI16.size()
+              << "\nI32 " << vBufI32.size()
+              << "\nI64 " << vBufI64.size()
+              << "\nDouble " << vBufDbl.size()
+              << std::endl;
+    if(vBufBin.size())
+        std::cout << ".. aqui, faz-se o dicionario binario .." << std::endl;
+    else
+        std::cout << ".. sem dados para binario .." << std::endl;
+    if(vBufI16.size())
+        std::cout << ".. aqui, faz-se o dicionario I16 .." << std::endl;
+    else
+        std::cout << ".. sem dados para I16 .." << std::endl;
+    if(vBufI32.size())
+        std::cout << ".. aqui, faz-se o dicionario I32 .." << std::endl;
+    else
+        std::cout << ".. sem dados para I32 .." << std::endl;
+    if(vBufI64.size())
+        std::cout << ".. aqui, faz-se o dicionario I64 .." << std::endl;
+    else
+        std::cout << ".. sem dados para I64 .." << std::endl;
+    if(vBufDbl.size())
+        std::cout << ".. aqui, faz-se o dicionario double .." << std::endl;
+    else
+        std::cout << ".. sem dados para double .." << std::endl;
     //===================================================
     return true;
 }

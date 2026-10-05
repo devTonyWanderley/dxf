@@ -6,8 +6,10 @@ CONFIG += c++20 console
 
 SOURCES += main.cpp \
     Dxf.cpp \
-    Parse.cpp
+    Parse.cpp \
+    Util.cpp
 
 HEADERS += \
     Dxf.hpp \
-    Parse.hpp
+    Parse.hpp \
+    Util.hpp

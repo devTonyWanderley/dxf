@@ -3,9 +3,9 @@
 #include <filesystem>
 #include <fstream>
 #include <cstdlib>
-#include <cstdint>
 #include <limits>
 #include <vector>
+#include "Util.hpp"
 
 namespace ARQ
 {
@@ -28,3 +28,37 @@ public:
     std::vector<char> GetLinha(size_t n, char *tx);
 };
 } // namespace ARQ
+
+//--EXEMPLO DE USO--
+/*
+
+void tParse()
+{
+    ARQ::Arquivo arq;
+    arq.SetArquivo("C:/Tony/Soft/cpp/integrado/sistemaIntegrado/CPP/INSTANCIA/TMP/20260710152627.tmp");
+    std::cout << "Sao " << arq.GetLnTotal() << " linhas, compostas por " << arq.GetChTotal() << " caracteres." << std::endl;
+    std::cout << "As dez primeiras linhas sao:\n";
+    for(size_t i = 0; i < 10; i++)
+    {
+        char txt[256] = {};
+        arq.GetLinha(i, txt);
+        std::cout << txt << std::endl;
+    }
+    std::cout << "...\n ..\n  .\ne dez ultimas:\n";
+    size_t lnTotal = arq.GetLnTotal();
+    for(size_t i = (lnTotal - 10); i < lnTotal; i++)
+    {
+        char txt[256] = {};
+        arq.GetLinha(i, txt);
+        std::cout << txt << std::endl;
+    }
+    std::vector<size_t> indices = {};
+    indices.reserve(lnTotal);
+    indices = arq.GetIndices();
+    std::cout << ".\n..\n...\nOs dez primeiros indices de linhas sao:\n";
+    for(size_t i = 0; i < 10; i++)std::cout << indices[i] << ' ';
+    std::cout << "\n(os fins de linha no arquivo)\n...\n..\n.\n";
+}
+
+*/
+//==============================================================================================================================================
