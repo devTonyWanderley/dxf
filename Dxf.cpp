@@ -135,22 +135,16 @@ std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> &vStr, std::vector<s
     return ir;
 }
 
-bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
+void DXF::Dxf::LAPovoar(ARQ::Arquivo &fonte)
 {
-    //--Ler o arquivo--
-    ARQ::Arquivo arq;
-    if(!arq.SetArquivo(fonte)) return false;
-    //======================================
-
-    //--Obter a quantidade de linhas por tipo--
-    size_t numLinhas = arq.GetLnTotal();
+    size_t n = fonte.GetLnTotal();
+    std::vector<size_t> q = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     char str[256];
     bool isGrupo = false;
-    std::vector<size_t> quantidades = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     Grupo grupo;
-    for(size_t i = 0; i < numLinhas; i++)
+    for(size_t i = 0; i < n; i++)
     {
-        arq.GetLinha(i, str);
+        fonte.GetLinha(i, str);
         isGrupo = !isGrupo;
         if(strlen(str) == 1 && str[0] < 32) isGrupo = !isGrupo;
         else
@@ -158,30 +152,31 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
             if(isGrupo)
             {
                 grupo = getGrupo(str);
-                switch (grupo) {
-                case Grupo::BINARY:
-                    quantidades[1]++;
-                    break;
+                switch (grupo)
+                {
                 case Grupo::BOOL:
-                    quantidades[0]++;
+                    q[0]++;
                     break;
-                case Grupo::DOUBLE:
-                    quantidades[5]++;
-                    break;
-                case Grupo::HANDLE:
-                    quantidades[7]++;
+                case Grupo::BINARY:
+                    q[1]++;
                     break;
                 case Grupo::INT16:
-                    quantidades[2]++;
+                    q[2]++;
                     break;
                 case Grupo::INT32:
-                    quantidades[3]++;
+                    q[3]++;
                     break;
                 case Grupo::INT64:
-                    quantidades[4]++;
+                    q[4]++;
+                    break;
+                case Grupo::DOUBLE:
+                    q[5]++;
                     break;
                 case Grupo::STRING:
-                    quantidades[6]++;
+                    q[6]++;
+                    break;
+                case Grupo::HANDLE:
+                    q[7]++;
                     break;
                 default:
                     break;
@@ -189,44 +184,27 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
             }
             else
             {
-                if(grupo == Grupo::HANDLE) quantidades[9] += (size_t)strlen(str);
-                else if(grupo == Grupo::STRING) quantidades[8] += (size_t)strlen(str);
+                if(grupo == Grupo::STRING) q[8] += (size_t)strlen(str);
+                else if(grupo == Grupo::HANDLE) q[9] += (size_t)strlen(str);
             }
         }
     }
-    //for(size_t i = 0; i < quantidades.size(); i++) std::cout << quantidades[i] << std::endl;
-    //======================================================================================    //  ..ok..
-
-    //--Povoar buffer's locais--
-    std::vector<bool> vBool;
-    std::vector<uint8_t> vBufBin;
-    std::vector<int16_t> vBufI16;
-    std::vector<int32_t> vBufI32;
-    std::vector<int64_t> vBufI64;
-    std::vector<double> vBufDbl;
-    std::vector<char> vBufStr;
-    std::vector<char> vBufHnd;
-    std::vector<size_t> vIndStr;
-    std::vector<size_t> vIndHnd;
-
-    vBool.reserve(quantidades[0]);
-    vBufBin.reserve(quantidades[1]);
-    vBufI16.reserve(quantidades[2]);
-    vBufI32.reserve(quantidades[3]);
-    vBufI64.reserve(quantidades[4]);
-    vBufDbl.reserve(quantidades[5]);
-    vBufStr.reserve(quantidades[8]);
-    vBufHnd.reserve(quantidades[9]);
-    vIndStr.reserve(quantidades[6]);
-    vIndHnd.reserve(quantidades[7]);
-
+    mBool.reserve(q[0]);
+    mBufBin.reserve(q[1]);
+    mBufI16.reserve(q[2]);
+    mBufI32.reserve(q[3]);
+    mBufI64.reserve(q[4]);
+    mBufDbl.reserve(q[5]);
+    mBufStr.reserve(q[6]);
+    mBufHnd.reserve(q[7]);
+    mIndStr.reserve(q[8]);
+    mIndHnd.reserve(q[9]);
     size_t iStr = 0, iHnd = 0;
-
     isGrupo = false;
     grupo = Grupo::GRUPO;
-    for(size_t i = 0; i < numLinhas; i++)
+    for(size_t i = 0; i < n; i++)
     {
-        arq.GetLinha(i, str);
+        fonte.GetLinha(i, str);
         isGrupo = !isGrupo;
         if(strlen(str) == 1 && str[0] < 32) isGrupo = !isGrupo;
         else
@@ -235,33 +213,33 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
             else
             {
                 switch (grupo) {
-                case Grupo::BINARY:
-                    vBufBin.push_back((uint8_t)std::stoi(str));
-                    break;
                 case Grupo::BOOL:
-                    vBool.push_back((bool)std::stoi(str));
+                    mBool.push_back((bool)std::stoi(str));
                     break;
-                case Grupo::DOUBLE:
-                    vBufDbl.push_back((double)std::stod(str));
-                    break;
-                case Grupo::HANDLE:
-                    iHnd += (size_t)strlen(str);
-                    vIndHnd.push_back(iHnd);
-                    for(size_t j = 0; j < (size_t)strlen(str); j++) vBufHnd.push_back(str[j]);
+                case Grupo::BINARY:
+                    mBufBin.push_back((uint8_t)std::stoi(str));
                     break;
                 case Grupo::INT16:
-                    vBufI16.push_back((uint16_t)std::stoull(str));
+                    mBufI16.push_back((uint16_t)std::stoull(str));
                     break;
                 case Grupo::INT32:
-                    vBufI32.push_back((uint32_t)std::stoull(str));
+                    mBufI32.push_back((uint32_t)std::stoull(str));
                     break;
                 case Grupo::INT64:
-                    vBufI64.push_back((uint64_t)std::stoull(str));
+                    mBufI64.push_back((uint64_t)std::stoull(str));
+                    break;
+                case Grupo::DOUBLE:
+                    mBufDbl.push_back((double)std::stod(str));
                     break;
                 case Grupo::STRING:
                     iStr += (size_t)strlen(str);
-                    vIndStr.push_back(iStr);
-                    for(size_t j = 0; j < (size_t)strlen(str); j++) vBufStr.push_back(str[j]);
+                    mIndStr.push_back(iStr);
+                    for(size_t j = 0; j < (size_t)strlen(str); j++) mBufStr.push_back(str[j]);
+                    break;
+                case Grupo::HANDLE:
+                    iHnd += (size_t)strlen(str);
+                    mIndHnd.push_back(iHnd);
+                    for(size_t j = 0; j < (size_t)strlen(str); j++) mBufHnd.push_back(str[j]);
                     break;
                 default:
                     break;
@@ -269,80 +247,101 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
             }
         }
     }
-    //==========================================================================================    ..ok..
-
-    //--Ordenar e remover repetições--
-    if(vBufBin.size())
+    if(mBufBin.size())
     {
-        Dados::OrdenaVectorQS(vBufBin, false);
-        vBufBin.shrink_to_fit();
+        Dados::OrdenaVectorQS(mBufBin, false);
+        mBufBin.shrink_to_fit();
     }
-    if(vBufI16.size())
+    if(mBufI16.size())
     {
-        Dados::OrdenaVectorQS(vBufI16, false);
-        vBufI16.shrink_to_fit();
+        Dados::OrdenaVectorQS(mBufI16, false);
+        mBufI16.shrink_to_fit();
     }
-    if(vBufI32.size())
+    if(mBufI32.size())
     {
-        Dados::OrdenaVectorQS(vBufI32, false);
-        vBufI32.shrink_to_fit();
+        Dados::OrdenaVectorQS(mBufI32, false);
+        mBufI32.shrink_to_fit();
     }
-    if(vBufI64.size())
+    if(mBufI64.size())
     {
-        Dados::OrdenaVectorQS(vBufI64, false);
-        vBufI64.shrink_to_fit();
+        Dados::OrdenaVectorQS(mBufI64, false);
+        mBufI64.shrink_to_fit();
     }
-    if(vBufDbl.size())
+    if(mBufDbl.size())
     {
-        Dados::OrdenaVectorQS(vBufDbl, false);
-        vBufDbl.shrink_to_fit();
+        Dados::OrdenaVectorQS(mBufDbl, false);
+        mBufDbl.shrink_to_fit();
     }
-    //  **TRABALHAR AQUI OS STR E HND**
-    std::cout << "vBufStr.size(): " << vBufStr.size() << "\tvIndStr.size(): " << vIndStr.size() << std::endl;
-    for(size_t i = 0; i < 128; i++) std::cout << vBufStr[i];
-    std::cout << '\n';
-    for(size_t i = 0; i < 16; i++) std::cout << ' ' << vIndStr[i];
-    std::cout << '\n';
-
-    std::vector<size_t> v = QSOrdenaStr(vBufStr, vIndStr);
+    if(mIndStr.size())
+    {
+        std::vector<size_t> v = QSOrdenaStr(mBufStr, mIndStr);
+        size_t nChar = 0;
+        for(size_t i = 0; i < v.size(); i++)
+        {
+            getTexto(v[i], mBufStr, mIndStr, str);
+            nChar += strlen(str);
+        }
+        std::vector<char> u = {};
+        u.reserve(nChar);
+        std::vector<size_t> w = {};
+        w.reserve(v.size());
+        for(size_t i = 0; i < v.size(); i++)
+        {
+            getTexto(v[i], mBufStr, mIndStr, str);
+            for(size_t j = 0; j < strlen(str); j++) u.push_back(str[j]);
+            w.push_back(u.size());
+        }
+        mBufStr.swap(u);
+        mBufStr.shrink_to_fit();
+        mIndStr.swap(w);
+        mIndStr.shrink_to_fit();
+    }
+    if(mIndHnd.size())
+    {
+        std::vector<size_t> v = QSOrdenaStr(mBufHnd, mIndHnd);
+        size_t nChar = 0;
+        for(size_t i = 0; i < v.size(); i++)
+        {
+            getTexto(v[i], mBufHnd, mIndHnd, str);
+            nChar += strlen(str);
+        }
+        std::vector<char> u = {};
+        u.reserve(nChar);
+        std::vector<size_t> w = {};
+        w.reserve(v.size());
+        for(size_t i = 0; i < v.size(); i++)
+        {
+            getTexto(v[i], mBufHnd, mIndHnd, str);
+            for(size_t j = 0; j < strlen(str); j++) u.push_back(str[j]);
+            w.push_back(u.size());
+        }
+        mBufHnd.swap(u);
+        mBufHnd.shrink_to_fit();
+        mIndHnd.swap(w);
+        mIndHnd.shrink_to_fit();
+    }
     /*
-    for(size_t i = 0; i < v.size(); i++)
-    {
-        char str[256];
-        getTexto(v[i], vBufStr, vIndStr, str);
-        std::cout << i << "\t\'" << str << "\'\n";
-    }
     */
-    //    **reconstruir os linguições de char e os índices**
-    //      **contar o número de caracteres**
-    size_t nch = 0;
-    for(size_t i = 0; i < v.size(); i++)
-    {
-        char str[256];
-        getTexto(v[i], vBufStr, vIndStr, str);
-        nch += strlen(str);
-    }
-    std::cout << "nch: " << nch << std::endl;
-    std::vector<char> u = {};
-    u.reserve(nch);
-    std::vector<size_t> w = {};
-    w.reserve(v.size());
-    for(size_t i = 0; i < v.size(); i++)
-    {
-        char str[256];
-        getTexto(v[i], vBufStr, vIndStr, str);
-        for(size_t j = 0; j < strlen(str); j++) u.push_back(str[j]);
-        w.push_back(u.size());
-    }
-    for(size_t i = 0; i < w.size(); i++)
-    {
-        char str[256];
-        getTexto(i, u, w, str);
-        std::cout << i << " - \'" << str << "\'\n";
-    }
-    //===================================================
+}
 
-    //--Fazer dicionários--
-    //===================================================
+bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
+{
+    ARQ::Arquivo arq;
+    if(!arq.SetArquivo(fonte)) return false;
+    LAPovoar(arq);
+
+    std::cout
+        << "mBool.size(): " << mBool.size()
+        << "\nmBufBin.size(): " << mBufBin.size()
+        << "\nmBufI16.size(): " << mBufI16.size()
+        << "\nmBufI32.size(): " << mBufI32.size()
+        << "\nmBufI64.size(): " << mBufI64.size()
+        << "\nmBufDbl.size(): " << mBufDbl.size()
+        << "\nmBufStr.size(): " << mBufStr.size()
+        << "\nmBufHnd.size(): " << mBufHnd.size()
+        << "\nmIndStr.size(): " << mIndStr.size()
+        << "\nmIndHnd.size(): " << mIndHnd.size()
+        << std::endl;
+
     return true;
 }

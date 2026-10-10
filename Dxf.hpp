@@ -33,6 +33,7 @@ private:
     Grupo getGrupo(std::vector<char> &v);
     void getTexto(size_t n, std::vector<char> &vStr, std::vector<size_t> &vInd, char *tx);
     std::vector<size_t> QSOrdenaStr(std::vector<char> &vStr, std::vector<size_t> &vInd);
+    void LAPovoar(ARQ::Arquivo &fonte);
     bool LerArquivo(const std::filesystem::path &fonte);
 public:
     Dxf() = default;
