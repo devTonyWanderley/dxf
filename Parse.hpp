@@ -2,9 +2,7 @@
 #pragma once
 #include <filesystem>
 #include <fstream>
-#include <cstdlib>
 #include <limits>
-#include <vector>
 #include "Util.hpp"
 
 namespace ARQ
@@ -26,6 +24,9 @@ public:
     std::vector<char> GetChars();
     std::vector<char> GetLinha(size_t n);
     std::vector<char> GetLinha(size_t n, char *tx);
+    bool LnIgual(size_t m, size_t n);   //  ln(m) = ln(n)
+    bool LnMenor(size_t m, size_t n);   //  ln(m) < ln(n)
+    bool LnMaior(size_t m, size_t n);   //  ln(m) > ln(n)
 };
 } // namespace ARQ
 

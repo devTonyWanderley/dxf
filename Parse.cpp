@@ -1,4 +1,5 @@
 #include "Parse.hpp"
+#include <cstring>
 
 bool ARQ::Arquivo::Ler(const std::filesystem::path &nome)
 {
@@ -78,4 +79,31 @@ std::vector<char> ARQ::Arquivo::GetLinha(size_t n, char *tx)
     for(; i < r.size(); i++) tx[i] = r[i];
     tx[i] = 0;
     return r;
+}
+
+bool ARQ::Arquivo::LnIgual(size_t m, size_t n)   //  ln(m) = ln(n)
+{
+    if(!mTotalLn) return false;
+    if(m >= mTotalLn || n >= mTotalLn) return false;
+    if(m == n) return true;
+    char txm[256], txn[256];
+    GetLinha(m, txm);
+    GetLinha(n, txn);
+    return (strcmp(txm, txn) == 0);
+}
+
+bool ARQ::Arquivo::LnMenor(size_t m, size_t n)   //  ln(m) < ln(n)
+{
+    if(!mTotalLn) return false;
+    if(m >= mTotalLn || n >= mTotalLn) return false;
+    if(m == n) return false;
+    char txm[256], txn[256];
+    GetLinha(m, txm);
+    GetLinha(n, txn);
+    return (strcmp(txn, txm) > 0);
+}
+
+bool ARQ::Arquivo::LnMaior(size_t m, size_t n)   //  ln(m) < ln(n)
+{
+    return LnMenor(n, m);
 }

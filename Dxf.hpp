@@ -28,17 +28,18 @@ private:
     std::vector<size_t> mIndStr = {};
     std::vector<size_t> mIndHnd = {};
 
-    //Grupo getGrupo(int16_t gr);
-    //Grupo getGrupo(char *str);
-    //Grupo getGrupo(std::vector<char> &v);
+    Grupo getGrupo(int16_t gr);
+    Grupo getGrupo(char *str);
+    Grupo getGrupo(std::vector<char> &v);
+    std::vector<size_t> QSOrdenaStr(std::vector<char> vStr, std::vector<size_t> vInd);
     bool LerArquivo(const std::filesystem::path &fonte);
 public:
     Dxf() = default;
     bool valida(const std::filesystem::path &fonte){return LerArquivo(fonte);}
 
 
-    Grupo getGrupo(int16_t gr);
-    Grupo getGrupo(char *str);
-    Grupo getGrupo(std::vector<char> &v);
+    //Grupo getGrupo(int16_t gr);
+    //Grupo getGrupo(char *str);
+    //Grupo getGrupo(std::vector<char> &v);
 };
 } // namespace DXF

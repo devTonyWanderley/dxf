@@ -68,6 +68,83 @@ DXF::Grupo DXF::Dxf::getGrupo(std::vector<char> &v)
     return getGrupo(tx);
 }
 
+std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> vStr, std::vector<size_t> vInd)
+{
+    std::vector<size_t> indices = {};
+    if(vInd.size() < 2) return indices;
+    indices.reserve(vInd.size());
+    for(size_t i = 0; i < vInd.size(); i++) indices.push_back(i);
+    std::stack<Dados::ParI> w;
+    w.push({0, indices.size()});
+    while(!w.empty())
+    {
+        Dados::ParI atual = w.top();
+        w.pop();
+        size_t p = atual.Hard, q;
+        for(size_t i = atual.Hard; i < (atual.Tail - 1); i++)
+        {
+            size_t posi, posf = vInd[indices[i]];
+            if(vInd[indices[i]] == 0) posi = 0;
+            else posi = vInd[(indices[i] - 1)];
+            char a[256];    //  particionar esse pedaço
+            size_t k = 0;
+            for(size_t j = posi; j < posf; j++, k++) a[k] = vStr[j];
+            a[k] = 0;
+            posf = vInd[indices[(atual.Tail - 1)]];
+            if(vInd[indices[(atual.Tail - 1)]] == 0) posi = 0;
+            else posi = vInd[(indices[(atual.Tail - 1)] - 1)];
+            char b[256];
+            k = 0;
+            for(size_t j = posi; j < posf; j++, k++) b[k] = vStr[j];
+            b[k] = 0;
+            if(strcmp(a, b) < 0) std::swap(indices[p++], indices[i]);
+        }
+        std::swap(indices[p], indices[(atual.Tail - 1)]);
+        q = p + 1;
+        if(atual.Tail > (q + 1))
+        {
+            if(p > (atual.Hard + 1))
+            {
+                if((atual.Tail - q) > (p - atual.Hard))
+                {
+                    w.push({q, atual.Tail});
+                    w.push({atual.Hard, p});
+                }
+                else
+                {
+                    w.push({atual.Hard, p});
+                    w.push({q, atual.Tail});
+                }
+            }
+            else w.push({q, atual.Tail});
+        }
+        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
+    }
+    std::vector<size_t> ir = {};
+    ir.reserve(indices.size());
+    ir.push_back(indices[0]);
+    for(size_t i = 1; i < indices.size(); i++)
+    {
+        size_t posi, posf = vInd[indices[i]];
+        if(vInd[indices[i]] == 0) posi = 0;
+        else posi = vInd[(indices[i] - 1)];
+        char a[256];
+        size_t k = 0;
+        for(size_t j = posi; j < posf; j++, k++) a[k] = vStr[j];
+        a[k] = 0;
+        posf = vInd[ir[(ir.size() - 1)]];
+        if(vInd[ir[(ir.size() - 1)]] == 0) posi = 0;
+        else posi = vInd[(ir[(ir.size() - 1)] - 1)];
+        char b[256];
+        k = 0;
+        for(size_t j = posi; j < posf; j++, k++) b[k] = vStr[j];
+        b[k] = 0;
+        if(strcmp(a, b) != 0) ir.push_back(indices[i]);
+    }
+    ir.shrink_to_fit();
+    return ir;
+}
+
 bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
 {
     //--Ler o arquivo--
@@ -164,7 +241,7 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
         if(strlen(str) == 1 && str[0] < 32) isGrupo = !isGrupo;
         else
         {
-            if(isGrupo)grupo = getGrupo(str);
+            if(isGrupo) grupo = getGrupo(str);
             else
             {
                 switch (grupo) {
@@ -202,57 +279,54 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
             }
         }
     }
-    /*
-    std::cout << "Booleano:" << std::endl;
-    for(size_t i = 0; i < vBool.size(); i++) std::cout << vBool[i] << std::endl;
-    std::cout << "Binario:" << std::endl;
-    for(size_t i = 0; i < vBufBin.size(); i++) std::cout << vBufBin[i] << std::endl;
-    std::cout << "I16:" << std::endl;
-    for(size_t i = 0; i < vBufI16.size(); i++) std::cout << vBufI16[i] << std::endl;
-    std::cout << "I32:" << std::endl;
-    for(size_t i = 0; i < vBufI32.size(); i++) std::cout << vBufI32[i] << std::endl;
-    std::cout << "I64:" << std::endl;
-    for(size_t i = 0; i < vBufI64.size(); i++) std::cout << vBufI64[i] << std::endl;
-    std::cout << "Double:" << std::endl;
-    for(size_t i = 0; i < vBufDbl.size(); i++) std::cout << vBufDbl[i] << std::endl;
-    std::cout << "String:" << std::endl;
-    for(size_t i = 0; i < vBufStr.size(); i++) std::cout << vBufStr[i];
-    std::cout << "\nHandle:" << std::endl;
-    for(size_t i = 0; i < vBufHnd.size(); i++) std::cout << vBufHnd[i];
-    std::cout << "iString:" << std::endl;
-    for(size_t i = 0; i < vIndStr.size(); i++) std::cout << vIndStr[i] << std::endl;
-    std::cout << "iHandle:" << std::endl;
-    for(size_t i = 0; i < vIndHnd.size(); i++) std::cout << vIndHnd[i] << std::endl;
-    */
     //==========================================================================================    ..ok..
 
-    //--Ordenar, remover repetições e fazer dicionários--
-    std::cout << "Binario: " << vBufBin.size()
-              << "\nI16 " << vBufI16.size()
-              << "\nI32 " << vBufI32.size()
-              << "\nI64 " << vBufI64.size()
-              << "\nDouble " << vBufDbl.size()
-              << std::endl;
+    //--Ordenar e remover repetições--
     if(vBufBin.size())
-        std::cout << ".. aqui, faz-se o dicionario binario .." << std::endl;
-    else
-        std::cout << ".. sem dados para binario .." << std::endl;
+    {
+        Dados::OrdenaVectorQS(vBufBin, false);
+        vBufBin.shrink_to_fit();
+    }
     if(vBufI16.size())
-        std::cout << ".. aqui, faz-se o dicionario I16 .." << std::endl;
-    else
-        std::cout << ".. sem dados para I16 .." << std::endl;
+    {
+        Dados::OrdenaVectorQS(vBufI16, false);
+        vBufI16.shrink_to_fit();
+    }
     if(vBufI32.size())
-        std::cout << ".. aqui, faz-se o dicionario I32 .." << std::endl;
-    else
-        std::cout << ".. sem dados para I32 .." << std::endl;
+    {
+        Dados::OrdenaVectorQS(vBufI32, false);
+        vBufI32.shrink_to_fit();
+    }
     if(vBufI64.size())
-        std::cout << ".. aqui, faz-se o dicionario I64 .." << std::endl;
-    else
-        std::cout << ".. sem dados para I64 .." << std::endl;
+    {
+        Dados::OrdenaVectorQS(vBufI64, false);
+        vBufI64.shrink_to_fit();
+    }
     if(vBufDbl.size())
-        std::cout << ".. aqui, faz-se o dicionario double .." << std::endl;
-    else
-        std::cout << ".. sem dados para double .." << std::endl;
+    {
+        Dados::OrdenaVectorQS(vBufDbl, false);
+        vBufDbl.shrink_to_fit();
+    }
+    //  **TRABALHAR AQUI OS STR E HND**
+    std::cout << "vBufStr.size(): " << vBufStr.size() << "\tvIndStr.size(): " << vIndStr.size() << std::endl;
+    for(size_t i = 0; i < 128; i++) std::cout << vBufStr[i];
+    std::cout << '\n';
+    for(size_t i = 0; i < 16; i++) std::cout << ' ' << vIndStr[i];
+    std::cout << '\n';
+
+    std::vector<size_t> v = QSOrdenaStr(vBufStr, vIndStr);
+    //for(size_t i = 0; i < v.size(); i++) std::cout << v[i] << std::endl;
+    for(size_t i = 0; i < v.size(); i++)
+    {
+        size_t posi, posf = vIndStr[v[i]];
+        if(v[i] == 0) posi = 0;
+        else posi = vIndStr[(v[i] - 1)];
+        for(size_t j = posi; j < posf; j++) std::cout << vBufStr[j];
+        std::cout << '\n';
+    }
+    //===================================================
+
+    //--Fazer dicionários--
     //===================================================
     return true;
 }
