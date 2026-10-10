@@ -31,7 +31,8 @@ private:
     Grupo getGrupo(int16_t gr);
     Grupo getGrupo(char *str);
     Grupo getGrupo(std::vector<char> &v);
-    std::vector<size_t> QSOrdenaStr(std::vector<char> vStr, std::vector<size_t> vInd);
+    void getTexto(size_t n, std::vector<char> &vStr, std::vector<size_t> &vInd, char *tx);
+    std::vector<size_t> QSOrdenaStr(std::vector<char> &vStr, std::vector<size_t> &vInd);
     bool LerArquivo(const std::filesystem::path &fonte);
 public:
     Dxf() = default;

@@ -68,7 +68,17 @@ DXF::Grupo DXF::Dxf::getGrupo(std::vector<char> &v)
     return getGrupo(tx);
 }
 
-std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> vStr, std::vector<size_t> vInd)
+void DXF::Dxf::getTexto(size_t n, std::vector<char> &vStr, std::vector<size_t> &vInd, char *tx)
+{
+    size_t posi, posf = vInd[n];
+    if(n == 0) posi = 0;
+    else posi = vInd[n - 1];
+    size_t i = 0;
+    for(size_t j = posi; j < posf; i++, j++) tx[i] = vStr[j];
+    tx[i] = 0;
+}
+
+std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> &vStr, std::vector<size_t> &vInd)
 {
     std::vector<size_t> indices = {};
     if(vInd.size() < 2) return indices;
@@ -83,20 +93,10 @@ std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> vStr, std::vector<si
         size_t p = atual.Hard, q;
         for(size_t i = atual.Hard; i < (atual.Tail - 1); i++)
         {
-            size_t posi, posf = vInd[indices[i]];
-            if(vInd[indices[i]] == 0) posi = 0;
-            else posi = vInd[(indices[i] - 1)];
-            char a[256];    //  particionar esse pedaço
-            size_t k = 0;
-            for(size_t j = posi; j < posf; j++, k++) a[k] = vStr[j];
-            a[k] = 0;
-            posf = vInd[indices[(atual.Tail - 1)]];
-            if(vInd[indices[(atual.Tail - 1)]] == 0) posi = 0;
-            else posi = vInd[(indices[(atual.Tail - 1)] - 1)];
+            char a[256];
+            getTexto(indices[i], vStr, vInd, a);
             char b[256];
-            k = 0;
-            for(size_t j = posi; j < posf; j++, k++) b[k] = vStr[j];
-            b[k] = 0;
+            getTexto(indices[(atual.Tail - 1)], vStr, vInd, b);
             if(strcmp(a, b) < 0) std::swap(indices[p++], indices[i]);
         }
         std::swap(indices[p], indices[(atual.Tail - 1)]);
@@ -125,20 +125,10 @@ std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> vStr, std::vector<si
     ir.push_back(indices[0]);
     for(size_t i = 1; i < indices.size(); i++)
     {
-        size_t posi, posf = vInd[indices[i]];
-        if(vInd[indices[i]] == 0) posi = 0;
-        else posi = vInd[(indices[i] - 1)];
         char a[256];
-        size_t k = 0;
-        for(size_t j = posi; j < posf; j++, k++) a[k] = vStr[j];
-        a[k] = 0;
-        posf = vInd[ir[(ir.size() - 1)]];
-        if(vInd[ir[(ir.size() - 1)]] == 0) posi = 0;
-        else posi = vInd[(ir[(ir.size() - 1)] - 1)];
+        getTexto(indices[i], vStr, vInd, a);
         char b[256];
-        k = 0;
-        for(size_t j = posi; j < posf; j++, k++) b[k] = vStr[j];
-        b[k] = 0;
+        getTexto(ir[(ir.size() - 1)], vStr, vInd, b);
         if(strcmp(a, b) != 0) ir.push_back(indices[i]);
     }
     ir.shrink_to_fit();
@@ -315,14 +305,40 @@ bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
     std::cout << '\n';
 
     std::vector<size_t> v = QSOrdenaStr(vBufStr, vIndStr);
-    //for(size_t i = 0; i < v.size(); i++) std::cout << v[i] << std::endl;
+    /*
     for(size_t i = 0; i < v.size(); i++)
     {
-        size_t posi, posf = vIndStr[v[i]];
-        if(v[i] == 0) posi = 0;
-        else posi = vIndStr[(v[i] - 1)];
-        for(size_t j = posi; j < posf; j++) std::cout << vBufStr[j];
-        std::cout << '\n';
+        char str[256];
+        getTexto(v[i], vBufStr, vIndStr, str);
+        std::cout << i << "\t\'" << str << "\'\n";
+    }
+    */
+    //    **reconstruir os linguições de char e os índices**
+    //      **contar o número de caracteres**
+    size_t nch = 0;
+    for(size_t i = 0; i < v.size(); i++)
+    {
+        char str[256];
+        getTexto(v[i], vBufStr, vIndStr, str);
+        nch += strlen(str);
+    }
+    std::cout << "nch: " << nch << std::endl;
+    std::vector<char> u = {};
+    u.reserve(nch);
+    std::vector<size_t> w = {};
+    w.reserve(v.size());
+    for(size_t i = 0; i < v.size(); i++)
+    {
+        char str[256];
+        getTexto(v[i], vBufStr, vIndStr, str);
+        for(size_t j = 0; j < strlen(str); j++) u.push_back(str[j]);
+        w.push_back(u.size());
+    }
+    for(size_t i = 0; i < w.size(); i++)
+    {
+        char str[256];
+        getTexto(i, u, w, str);
+        std::cout << i << " - \'" << str << "\'\n";
     }
     //===================================================
 
