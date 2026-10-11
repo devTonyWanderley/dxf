@@ -52,7 +52,7 @@ DXF::Grupo DXF::Dxf::getGrupo(char *str)
     for(size_t i = 0; i < strlen(str); i++)
     {
         if(j >= 127) break;
-        if((str[i] >= '0' && str[i] <= '9') || (j == 0 && str[i] == '-'))
+        if(((str[i] >= '0') && (str[i] <= '9')) || ((j == 0) && (str[i] == '-')))
             tx[j++] = str[i];
     }
     if(j == 0) return Grupo::GRUPO;
@@ -78,17 +78,213 @@ void DXF::Dxf::getTexto(size_t n, std::vector<char> &vStr, std::vector<size_t> &
     tx[i] = 0;
 }
 
+void DXF::Dxf::OrdenaBin(std::vector<uint8_t> &v)
+{
+    if(v.size() < 2) return;
+    std::stack<Intervalo> w;
+    w.push({0, v.size()});
+    while(!w.empty())
+    {
+        Intervalo atual = w.top();
+        w.pop();
+        size_t p = atual.Hard, q;
+        for(size_t j = atual.Hard; j < (atual.Tail - 1); j++) {if(v[j] < v[atual.Tail - 1]) {std::swap(v[p++], v[j]);}}
+        std::swap(v[p], v[atual.Tail - 1]);
+        q = p + 1;
+        if(atual.Tail > (q + 1))
+        {
+            if(p > (atual.Hard + 1))
+            {
+                if((atual.Tail - q) > (p - atual.Hard))
+                {
+                    w.push({q, atual.Tail});
+                    w.push({atual.Hard, p});
+                }
+                else
+                {
+                    w.push({atual.Hard, p});
+                    w.push({q, atual.Tail});
+                }
+            }
+            else w.push({q, atual.Tail});
+        }
+        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
+    }
+    std::vector<uint8_t> u = {};
+    u.swap(v);
+    v.push_back(u[0]);
+    for(size_t i = 1; i < u.size(); i++) if(u[i] != v[(v.size() - 1)]) v.push_back(u[i]);
+    v.shrink_to_fit();
+}
+
+void DXF::Dxf::OrdenaI16(std::vector<int16_t> &v)
+{
+    if(v.size() < 2) return;
+    std::stack<Intervalo> w;
+    w.push({0, v.size()});
+    while(!w.empty())
+    {
+        Intervalo atual = w.top();
+        w.pop();
+        size_t p = atual.Hard, q;
+        for(size_t j = atual.Hard; j < (atual.Tail - 1); j++) {if(v[j] < v[atual.Tail - 1]) {std::swap(v[p++], v[j]);}}
+        std::swap(v[p], v[atual.Tail - 1]);
+        q = p + 1;
+        if(atual.Tail > (q + 1))
+        {
+            if(p > (atual.Hard + 1))
+            {
+                if((atual.Tail - q) > (p - atual.Hard))
+                {
+                    w.push({q, atual.Tail});
+                    w.push({atual.Hard, p});
+                }
+                else
+                {
+                    w.push({atual.Hard, p});
+                    w.push({q, atual.Tail});
+                }
+            }
+            else w.push({q, atual.Tail});
+        }
+        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
+    }
+    std::vector<int16_t> u = {};
+    u.swap(v);
+    v.push_back(u[0]);
+    for(size_t i = 1; i < u.size(); i++) if(u[i] != v[(v.size() - 1)]) v.push_back(u[i]);
+    v.shrink_to_fit();
+}
+
+void DXF::Dxf::OrdenaI32(std::vector<int32_t> &v)
+{
+    if(v.size() < 2) return;
+    std::stack<Intervalo> w;
+    w.push({0, v.size()});
+    while(!w.empty())
+    {
+        Intervalo atual = w.top();
+        w.pop();
+        size_t p = atual.Hard, q;
+        for(size_t j = atual.Hard; j < (atual.Tail - 1); j++) {if(v[j] < v[atual.Tail - 1]) {std::swap(v[p++], v[j]);}}
+        std::swap(v[p], v[atual.Tail - 1]);
+        q = p + 1;
+        if(atual.Tail > (q + 1))
+        {
+            if(p > (atual.Hard + 1))
+            {
+                if((atual.Tail - q) > (p - atual.Hard))
+                {
+                    w.push({q, atual.Tail});
+                    w.push({atual.Hard, p});
+                }
+                else
+                {
+                    w.push({atual.Hard, p});
+                    w.push({q, atual.Tail});
+                }
+            }
+            else w.push({q, atual.Tail});
+        }
+        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
+    }
+    std::vector<int32_t> u = {};
+    u.swap(v);
+    v.push_back(u[0]);
+    for(size_t i = 1; i < u.size(); i++) if(u[i] != v[(v.size() - 1)]) v.push_back(u[i]);
+    v.shrink_to_fit();
+}
+
+void DXF::Dxf::OrdenaI64(std::vector<int64_t> &v)
+{
+    if(v.size() < 2) return;
+    std::stack<Intervalo> w;
+    w.push({0, v.size()});
+    while(!w.empty())
+    {
+        Intervalo atual = w.top();
+        w.pop();
+        size_t p = atual.Hard, q;
+        for(size_t j = atual.Hard; j < (atual.Tail - 1); j++) {if(v[j] < v[atual.Tail - 1]) {std::swap(v[p++], v[j]);}}
+        std::swap(v[p], v[atual.Tail - 1]);
+        q = p + 1;
+        if(atual.Tail > (q + 1))
+        {
+            if(p > (atual.Hard + 1))
+            {
+                if((atual.Tail - q) > (p - atual.Hard))
+                {
+                    w.push({q, atual.Tail});
+                    w.push({atual.Hard, p});
+                }
+                else
+                {
+                    w.push({atual.Hard, p});
+                    w.push({q, atual.Tail});
+                }
+            }
+            else w.push({q, atual.Tail});
+        }
+        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
+    }
+    std::vector<int64_t> u = {};
+    u.swap(v);
+    v.push_back(u[0]);
+    for(size_t i = 1; i < u.size(); i++) if(u[i] != v[(v.size() - 1)]) v.push_back(u[i]);
+    v.shrink_to_fit();
+}
+
+void DXF::Dxf::OrdenaDbl(std::vector<double> &v)
+{
+    if(v.size() < 2) return;
+    std::stack<Intervalo> w;
+    w.push({0, v.size()});
+    while(!w.empty())
+    {
+        Intervalo atual = w.top();
+        w.pop();
+        size_t p = atual.Hard, q;
+        for(size_t j = atual.Hard; j < (atual.Tail - 1); j++) {if(v[j] < v[atual.Tail - 1]) {std::swap(v[p++], v[j]);}}
+        std::swap(v[p], v[atual.Tail - 1]);
+        q = p + 1;
+        if(atual.Tail > (q + 1))
+        {
+            if(p > (atual.Hard + 1))
+            {
+                if((atual.Tail - q) > (p - atual.Hard))
+                {
+                    w.push({q, atual.Tail});
+                    w.push({atual.Hard, p});
+                }
+                else
+                {
+                    w.push({atual.Hard, p});
+                    w.push({q, atual.Tail});
+                }
+            }
+            else w.push({q, atual.Tail});
+        }
+        else if(p > (atual.Hard + 1)) w.push({atual.Hard, p});
+    }
+    std::vector<double> u = {};
+    u.swap(v);
+    v.push_back(u[0]);
+    for(size_t i = 1; i < u.size(); i++) if(u[i] != v[(v.size() - 1)]) v.push_back(u[i]);
+    v.shrink_to_fit();
+}
+
+
 std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> &vStr, std::vector<size_t> &vInd)
 {
     std::vector<size_t> indices = {};
     if(vInd.size() < 2) return indices;
     indices.reserve(vInd.size());
     for(size_t i = 0; i < vInd.size(); i++) indices.push_back(i);
-    std::stack<Dados::ParI> w;
+    std::stack<Intervalo> w;
     w.push({0, indices.size()});
     while(!w.empty())
     {
-        Dados::ParI atual = w.top();
+        Intervalo atual = w.top();
         w.pop();
         size_t p = atual.Hard, q;
         for(size_t i = atual.Hard; i < (atual.Tail - 1); i++)
@@ -133,6 +329,197 @@ std::vector<size_t> DXF::Dxf::QSOrdenaStr(std::vector<char> &vStr, std::vector<s
     }
     ir.shrink_to_fit();
     return ir;
+}
+
+size_t DXF::Dxf::BbDbl(const double v)
+{
+    if(mBufDbl.empty()) return std::numeric_limits<size_t>::max();
+    size_t h = 0, t = mBufDbl.size() - 1, m;
+    for(;;)
+    {
+        if(t > (h + 1))
+        {
+            m = (t - h) >> 1;
+            m += h;
+            if(mBufDbl[m] == v) return m;
+            if(mBufDbl[m] > v) t = m;   //  v está à esquerda (entre h e m) .. m tem que diminuir
+            else h = m;
+        }
+        else if(t == (h + 1))
+        {
+            if(mBufDbl[h] == v) return h;
+            if(mBufDbl[t] == v) return t;
+            return std::numeric_limits<size_t>::max();
+        }
+        else if(mBufDbl[h] == v) return h;
+        else return std::numeric_limits<size_t>::max();
+    }
+}
+
+size_t DXF::Dxf::BbI16(const int16_t v)
+{
+    if(mBufI16.empty()) return std::numeric_limits<size_t>::max();
+    size_t h = 0, t = mBufI16.size() - 1, m;
+    for(;;)
+    {
+        if(t > (h + 1))
+        {
+            m = (t - h) >> 1;
+            m += h;
+            if(mBufI16[m] == v) return m;
+            if(mBufI16[m] > v) t = m;   //  v está à esquerda (entre h e m) .. m tem que diminuir
+            else h = m;
+        }
+        else if(t == (h + 1))
+        {
+            if(mBufI16[h] == v) return h;
+            if(mBufI16[t] == v) return t;
+            return std::numeric_limits<size_t>::max();
+        }
+        else if(mBufI16[h] == v) return h;
+        else return std::numeric_limits<size_t>::max();
+    }
+}
+
+size_t DXF::Dxf::BbI32(const int32_t v)
+{
+    if(mBufI32.empty()) return std::numeric_limits<size_t>::max();
+    size_t h = 0, t = mBufI32.size() - 1, m;
+    for(;;)
+    {
+        if(t > (h + 1))
+        {
+            m = (t - h) >> 1;
+            m += h;
+            if(mBufI32[m] == v) return m;
+            if(mBufI32[m] > v) t = m;   //  v está à esquerda (entre h e m) .. m tem que diminuir
+            else h = m;
+        }
+        else if(t == (h + 1))
+        {
+            if(mBufI32[h] == v) return h;
+            if(mBufI32[t] == v) return t;
+            return std::numeric_limits<size_t>::max();
+        }
+        else if(mBufI32[h] == v) return h;
+        else return std::numeric_limits<size_t>::max();
+    }
+}
+
+size_t DXF::Dxf::BbI64(const int64_t v)
+{
+    if(mBufI64.empty()) return std::numeric_limits<size_t>::max();
+    size_t h = 0, t = mBufI64.size() - 1, m;
+    for(;;)
+    {
+        if(t > (h + 1))
+        {
+            m = (t - h) >> 1;
+            m += h;
+            if(mBufI64[m] == v) return m;
+            if(mBufI64[m] > v) t = m;   //  v está à esquerda (entre h e m) .. m tem que diminuir
+            else h = m;
+        }
+        else if(t == (h + 1))
+        {
+            if(mBufI64[h] == v) return h;
+            if(mBufI64[t] == v) return t;
+            return std::numeric_limits<size_t>::max();
+        }
+        else if(mBufI64[h] == v) return h;
+        else return std::numeric_limits<size_t>::max();
+    }
+}
+
+size_t DXF::Dxf::BbStr(const char* v)
+{
+    if(mIndStr.empty()) return std::numeric_limits<size_t>::max();
+    char tx[256];
+    size_t h = 0, t = mIndStr.size() - 1, m;
+    for(;;)
+    {
+        if(t > (h + 1))
+        {
+            m = (t - h) >> 1;
+            m += h;
+            getTexto(m, mBufStr, mIndStr, tx);
+            if(strcmp(v, tx) == 0) return m;
+            if(strcmp(v, tx) < 0) t = m;   //  v está à esquerda (entre h e m) .. m tem que diminuir
+            else h = m;
+        }
+        else if(t == (h + 1))
+        {
+            getTexto(h, mBufStr, mIndStr, tx);
+            if(strcmp(v, tx) == 0) return h;
+            getTexto(t, mBufStr, mIndStr, tx);
+            if(strcmp(v, tx) == 0) return t;
+            return std::numeric_limits<size_t>::max();
+        }
+        else
+        {
+            getTexto(h, mBufStr, mIndStr, tx);
+            if(strcmp(v, tx) == 0) return h;
+            else return std::numeric_limits<size_t>::max();
+        }
+    }
+}
+
+size_t DXF::Dxf::BbHnd(const char* v)
+{
+    if(mIndHnd.empty()) return std::numeric_limits<size_t>::max();
+    char tx[256];
+    size_t h = 0, t = mIndHnd.size() - 1, m;
+    for(;;)
+    {
+        if(t > (h + 1))
+        {
+            m = (t - h) >> 1;
+            m += h;
+            getTexto(m, mBufHnd, mIndHnd, tx);
+            if(strcmp(v, tx) == 0) return m;
+            if(strcmp(v, tx) < 0) t = m;   //  v está à esquerda (entre h e m) .. m tem que diminuir
+            else h = m;
+        }
+        else if(t == (h + 1))
+        {
+            getTexto(h, mBufHnd, mIndHnd, tx);
+            if(strcmp(v, tx) == 0) return h;
+            getTexto(t, mBufHnd, mIndHnd, tx);
+            if(strcmp(v, tx) == 0) return t;
+            return std::numeric_limits<size_t>::max();
+        }
+        else
+        {
+            getTexto(h, mBufHnd, mIndHnd, tx);
+            if(strcmp(v, tx) == 0) return h;
+            else return std::numeric_limits<size_t>::max();
+        }
+    }
+}
+
+size_t DXF::Dxf::BbBin(const uint8_t v)
+{
+    if(mBufBin.empty()) return std::numeric_limits<size_t>::max();
+    size_t h = 0, t = mBufBin.size() - 1, m;
+    for(;;)
+    {
+        if(t > (h + 1))
+        {
+            m = (t - h) >> 1;
+            m += h;
+            if(mBufBin[m] == v) return m;
+            if(mBufBin[m] > v) t = m;   //  v está à esquerda (entre h e m) .. m tem que diminuir
+            else h = m;
+        }
+        else if(t == (h + 1))
+        {
+            if(mBufBin[h] == v) return h;
+            if(mBufBin[t] == v) return t;
+            return std::numeric_limits<size_t>::max();
+        }
+        else if(mBufBin[h] == v) return h;
+        else return std::numeric_limits<size_t>::max();
+    }
 }
 
 void DXF::Dxf::LAPovoar(ARQ::Arquivo &fonte)
@@ -220,13 +607,13 @@ void DXF::Dxf::LAPovoar(ARQ::Arquivo &fonte)
                     mBufBin.push_back((uint8_t)std::stoi(str));
                     break;
                 case Grupo::INT16:
-                    mBufI16.push_back((uint16_t)std::stoull(str));
+                    mBufI16.push_back((int16_t)std::stoll(str));
                     break;
                 case Grupo::INT32:
-                    mBufI32.push_back((uint32_t)std::stoull(str));
+                    mBufI32.push_back((int32_t)std::stoll(str));
                     break;
                 case Grupo::INT64:
-                    mBufI64.push_back((uint64_t)std::stoull(str));
+                    mBufI64.push_back((int64_t)std::stoll(str));
                     break;
                 case Grupo::DOUBLE:
                     mBufDbl.push_back((double)std::stod(str));
@@ -247,31 +634,11 @@ void DXF::Dxf::LAPovoar(ARQ::Arquivo &fonte)
             }
         }
     }
-    if(mBufBin.size())
-    {
-        Dados::OrdenaVectorQS(mBufBin, false);
-        mBufBin.shrink_to_fit();
-    }
-    if(mBufI16.size())
-    {
-        Dados::OrdenaVectorQS(mBufI16, false);
-        mBufI16.shrink_to_fit();
-    }
-    if(mBufI32.size())
-    {
-        Dados::OrdenaVectorQS(mBufI32, false);
-        mBufI32.shrink_to_fit();
-    }
-    if(mBufI64.size())
-    {
-        Dados::OrdenaVectorQS(mBufI64, false);
-        mBufI64.shrink_to_fit();
-    }
-    if(mBufDbl.size())
-    {
-        Dados::OrdenaVectorQS(mBufDbl, false);
-        mBufDbl.shrink_to_fit();
-    }
+    OrdenaBin(mBufBin);
+    OrdenaI16(mBufI16);
+    OrdenaI32(mBufI32);
+    OrdenaI64(mBufI64);
+    OrdenaDbl(mBufDbl);
     if(mIndStr.size())
     {
         std::vector<size_t> v = QSOrdenaStr(mBufStr, mIndStr);
@@ -320,8 +687,81 @@ void DXF::Dxf::LAPovoar(ARQ::Arquivo &fonte)
         mIndHnd.swap(w);
         mIndHnd.shrink_to_fit();
     }
-    /*
-    */
+    mLinhas.reserve(n);
+    isGrupo = false;
+    int16_t codGrupo = std::numeric_limits<int16_t>::max();
+    size_t indice;
+    for(size_t i = 0; i < n; i++)
+    {
+        fonte.GetLinha(i, str);
+        isGrupo = !isGrupo;
+        if(strlen(str) == 1 && str[0] < 32) isGrupo = !isGrupo;
+        else
+        {
+            if(isGrupo)
+            {
+                codGrupo = (int16_t)std::stoll(str);
+                grupo = getGrupo(codGrupo);
+            }
+            else
+            {
+                switch (grupo) {
+                case Grupo::DOUBLE:
+                    indice = BbDbl((double)std::stod(str));
+                    mLinhas.push_back({codGrupo, indice, true});
+                    break;
+                case Grupo::INT16:
+                    indice = BbI16((int16_t)std::stoll(str));
+                    mLinhas.push_back({codGrupo, indice, true});
+                    break;
+                case Grupo::INT32:
+                    indice = BbI32((int32_t)std::stoll(str));
+                    mLinhas.push_back({codGrupo, indice, true});
+                    break;
+                case Grupo::INT64:
+                    indice = BbI64((int64_t)std::stoll(str));
+                    mLinhas.push_back({codGrupo, indice, true});
+                    break;
+                case Grupo::STRING:
+                    indice = BbStr(str);
+                    mLinhas.push_back({codGrupo, indice, true});
+                    break;
+                case Grupo::HANDLE:
+                    indice = BbHnd(str);
+                    mLinhas.push_back({codGrupo, indice, true});
+                    break;
+                case Grupo::BOOL:
+                    indice = (size_t)std::stoull(str);
+                    mLinhas.push_back({codGrupo, std::numeric_limits<size_t>::max(), (bool)indice});
+                    break;
+                case Grupo::BINARY:
+                    indice = BbBin((uint8_t)std::stoull(str));
+                    mLinhas.push_back({codGrupo, indice, true});
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    mLinhas.shrink_to_fit();
+    std::cout << "mLinhas.size(): " << mLinhas.size() << std::endl;
+}
+
+void DXF::Dxf::imprimeLinhaDxf(size_t indice)
+{
+    if(mLinhas.empty()) return;
+    if(indice >= mLinhas.size()) indice = mLinhas.size() - 1;
+    if(mLinhas[indice].Cod == std::numeric_limits<int16_t>::max()) return;
+    std::cout << indice << " - [" << mLinhas[indice].Cod << " .. ";
+    if(mLinhas[indice].Cod >= 290 && mLinhas[indice].Cod < 300)
+        if(mLinhas[indice].flag)
+            std::cout << "True";
+        else
+            std::cout << "False";
+    else
+        std::cout << mLinhas[indice].Val;
+    std::cout << "]" << std::endl;
 }
 
 bool DXF::Dxf::LerArquivo(const std::filesystem::path &fonte)
